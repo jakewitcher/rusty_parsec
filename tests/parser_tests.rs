@@ -16,12 +16,12 @@ mod tests {
 
     #[test]
     fn fails_parsing_expected_char() {
-        let expected = Err(String::from("expected 'b' but found 'a'"));        
+        let expected = String::from("expected 'b' but found 'a' at line 1, column 1");        
         
         let actual = 
             Combinator::new(p_char('b')).run(String::from("abc"));
-        
-        assert_eq!(expected, actual);
+
+        assert_eq!(expected, actual.unwrap_err().to_err_msg());
     }
    
     #[test]
@@ -38,26 +38,26 @@ mod tests {
 
     #[test]
     fn fails_parsing_first_of_two_chars() {
-        let expected = Err(String::from("expected 'a' but found 'b'"));
+        let expected = String::from("expected 'a' but found 'b' at line 1, column 1");
 
         let actual = 
             Combinator::new(p_char('a'))
                 .and(p_char('b'))
                 .run(String::from("bca"));
 
-        assert_eq!(expected, actual);
+        assert_eq!(expected, actual.unwrap_err().to_err_msg());
     }
 
     #[test]
     fn fails_parsing_second_of_two_chars() {
-        let expected = Err(String::from("expected 'b' but found 'c'"));
+        let expected = String::from("expected 'b' but found 'c' at line 1, column 2");
 
         let actual = 
             Combinator::new(p_char('a'))
                 .and(p_char('b'))
                 .run(String::from("acb"));
 
-        assert_eq!(expected, actual);
+        assert_eq!(expected, actual.unwrap_err().to_err_msg());
     }
 
     #[test]
@@ -86,14 +86,14 @@ mod tests {
 
     #[test]
     fn fails_parsing_second_of_two_char_options() {
-        let expected = Err(String::from("expected 'b' but found 'c'"));
+        let expected = String::from("expected 'b' but found 'c' at line 1, column 1");
 
         let actual = 
             Combinator::new(p_char('a'))
                 .or(p_char('b'))
                 .run(String::from("cba"));
 
-        assert_eq!(expected, actual);
+        assert_eq!(expected, actual.unwrap_err().to_err_msg());
     }
 
     #[test]
@@ -123,26 +123,26 @@ mod tests {
 
     #[test]
     fn fails_first_parser_parsing_two_parsers_keeps_first() {
-        let expected = Err(String::from("expected 'a' but found 'b'"));
+        let expected = String::from("expected 'a' but found 'b' at line 1, column 1");
 
         let actual = 
             Combinator::new(p_char('a'))
                 .take_prev(p_char('b'))
                 .run(String::from("bac"));
 
-        assert_eq!(expected, actual);
+        assert_eq!(expected, actual.unwrap_err().to_err_msg());
     }
 
     #[test]
     fn fails_second_parser_parsing_two_parsers_keeps_first() {
-        let expected = Err(String::from("expected 'b' but found 'c'"));
+        let expected = String::from("expected 'b' but found 'c' at line 1, column 2");
 
         let actual = 
             Combinator::new(p_char('a'))
                 .take_prev(p_char('b'))
                 .run(String::from("acb"));
 
-        assert_eq!(expected, actual);
+        assert_eq!(expected, actual.unwrap_err().to_err_msg());
     }
 
     #[test]
@@ -159,26 +159,26 @@ mod tests {
 
     #[test]
     fn fails_first_parser_parsing_two_parsers_keeps_second() {
-        let expected = Err(String::from("expected 'a' but found 'b'"));
+        let expected = String::from("expected 'a' but found 'b' at line 1, column 1");
 
         let actual = 
             Combinator::new(p_char('a'))
                 .take_next(p_char('b'))
                 .run(String::from("bac"));
 
-        assert_eq!(expected, actual);
+        assert_eq!(expected, actual.unwrap_err().to_err_msg());
     }
 
     #[test]
     fn fails_second_parser_parsing_two_parsers_keeps_second() {
-        let expected = Err(String::from("expected 'b' but found 'c'"));
+        let expected = String::from("expected 'b' but found 'c' at line 1, column 2");
 
         let actual = 
             Combinator::new(p_char('a'))
                 .take_next(p_char('b'))
                 .run(String::from("acb"));
 
-        assert_eq!(expected, actual);
+        assert_eq!(expected, actual.unwrap_err().to_err_msg());
     }
 
     #[test]
@@ -196,7 +196,7 @@ mod tests {
 
     #[test]
     fn fails_parsing_expected_string() {
-        let expected = Err(String::from("expected 'hello' but found 'chell'"));
+        let expected = String::from("expected 'hello' but found 'chell' at line 1, column 1");
         
         let p_hello = p_string(String::from("hello"));
         
@@ -204,12 +204,12 @@ mod tests {
             Combinator::new(p_hello)
                 .run(String::from("chello, world"));
 
-        assert_eq!(expected, actual);
+        assert_eq!(expected, actual.unwrap_err().to_err_msg());
     }
 
     #[test]
     fn fails_parsing_expected_string_when_input_is_too_short() {
-        let expected = Err(String::from("expected 'hello' but input string was not long enough"));
+        let expected = String::from("expected 'hello' but found unknown error at line 1, column 1");
         
         let p_hello = p_string(String::from("hello"));
         
@@ -217,7 +217,7 @@ mod tests {
             Combinator::new(p_hello)
                 .run(String::from("hell"));
 
-        assert_eq!(expected, actual);
+        assert_eq!(expected, actual.unwrap_err().to_err_msg());
     }
 
     #[test]
@@ -303,5 +303,52 @@ mod tests {
                 .run(String::from("hello, y'all"));
 
         assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn succeeds_parsing_spaces_before_and_after_char() {
+        let expected = Ok(('a', 'b'));
+
+        let actual = 
+            Combinator::new(ws())
+                .take_next(p_char('a'))
+                .take_prev(ws())
+                .and(p_char('b'))
+                .run(String::from("  \na\t  \r\nb"));
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn fails_parsing_spaces_before_and_after_char() {
+        let expected = String::from("expected 'b' but found 'c' at line 3, column 1");
+
+        let actual = 
+            Combinator::new(ws())
+                .take_next(p_char('a'))
+                .take_prev(ws())
+                .and(p_char('b'))
+                .run(String::from("  \na\t  \r\nc"));
+
+        assert_eq!(expected, actual.unwrap_err().to_err_msg());
+    }
+
+    #[test]
+    fn succeeds_in_tracking_line_and_column_numbers() {
+        let expected = String::from("expected 'b' but found 'c' at line 5, column 3");
+
+        let p_hello = p_string(String::from("hello"));
+        let p_ab = p_string(String::from("ab"));
+
+        let actual = 
+            Combinator::new(p_hello)
+                .take_prev(ws())
+                .take_prev(p_char('a'))
+                .take_prev(ws())
+                .take_prev(p_ab)
+                .and(p_char('b'))
+                .run(String::from("hello\n\na\n\nabc"));
+
+        assert_eq!(expected, actual.unwrap_err().to_err_msg());
     }
 }
