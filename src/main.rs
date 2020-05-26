@@ -50,6 +50,7 @@ fn main() {
         Ok((hello, error)) => 
             println!("successfully parsed '{}' and '{}'", hello, error),
         Err(err) =>
+            // will print:> expected 'error' but found 'world' at line 4, column 3
             println!("{}", err.to_err_msg()),
     }
 }
