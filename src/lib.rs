@@ -36,8 +36,6 @@ impl ParserState {
     }
 
     fn move_slice_start_forward(&mut self, increment: usize) {
-        
-
         self.prev_slice_start.push(self.current_slice_start);
         self.current_slice_start += increment;
     }
@@ -337,6 +335,51 @@ pub fn p_string(target_string: String) -> Parser<String> {
                     );
     
                     Err(err)
+                }
+            }
+        }
+    )
+}
+
+pub fn p_int() -> Parser<u32> {
+    Box::new(
+        move |parser_state: &mut ParserState| {
+            let chars: Vec<char> = parser_state.current_slice().chars().collect();
+            
+            let mut ws_char_count = 0;
+
+            let err = ParserError::new(
+                parser_state.get_line_number(),
+                parser_state.get_column_number(),
+                "integral value".to_string(),
+                None
+            );
+
+            for c in chars  {
+                if c.is_numeric() {
+                    ws_char_count += 1;
+                } else {
+                    break;
+                }
+            }
+
+            if ws_char_count == 0 {
+                Err(err)
+            } else {
+                let int_slice = parser_state.get_slice(ws_char_count);
+
+                match int_slice {
+                    Some(slice) => {
+                        let integer_result = slice.parse::<u32>();
+                        match integer_result {
+                            Ok(integer) => {
+                                parser_state.move_input_state_forward(ws_char_count);
+                                Ok(integer)
+                            },
+                            _ => Err(err)
+                        }
+                    },
+                    _ => Err(err)
                 }
             }
         }

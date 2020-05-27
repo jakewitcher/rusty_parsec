@@ -351,4 +351,15 @@ mod tests {
 
         assert_eq!(expected, actual.unwrap_err().to_err_msg());
     }
+
+    #[test]
+    fn succeeds_parsing_integer_value() {
+        let expected = Ok(123);
+
+        let actual =
+            Combinator::new(p_int())
+            .run(String::from("123abc"));
+
+        assert_eq!(expected, actual);
+    }
 }
