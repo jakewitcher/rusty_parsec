@@ -17,7 +17,7 @@ fn main() {
     let p_world = p_string(String::from("world"));
 
     // "Combinator::new(parser_A) creates a new Combinator struct which has methods like 
-    // "or", "ws()" (which parses all whitespace characters) or "and" for combining parsers together
+    // "or", "take_next", or "and" for combining parsers together
     let hello_world =
         Combinator::new(p_goodbye_or_hello)
             .take_prev(p_comma)

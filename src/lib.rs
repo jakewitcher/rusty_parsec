@@ -1,4 +1,4 @@
-pub struct ParserInput {
+pub struct ParserState {
     input: String,
     current_slice_start: usize,
     prev_slice_start: Vec<usize>,
@@ -6,10 +6,10 @@ pub struct ParserInput {
     prev_newline: Vec<isize>,
 }
 
-impl ParserInput {
-    pub fn new(input: String) -> ParserInput {
+impl ParserState {
+    pub fn new(input: String) -> ParserState {
 
-        ParserInput {
+        ParserState {
             input,
             current_slice_start: 0,
             prev_slice_start: vec![0],
@@ -127,7 +127,7 @@ impl ParserError {
 
 type ParserResult<TResult> = Result<TResult, ParserError>;
 
-type Parser<TResult> = Box<dyn FnOnce(&mut ParserInput) -> ParserResult<TResult>>;
+type Parser<TResult> = Box<dyn FnOnce(&mut ParserState) -> ParserResult<TResult>>;
 
 pub struct Combinator<TResult>
 where TResult: 'static
@@ -149,14 +149,14 @@ impl<TResult> Combinator<TResult> {
     {
         let next_parser =
             Box::new(
-                move |parser_input: &mut ParserInput| {
+                move |parser_state: &mut ParserState| {
                     let self_parser = self.parser;
-                    let left = self_parser(parser_input)?;
+                    let left = self_parser(parser_state)?;
         
-                    other_parser(parser_input)
+                    other_parser(parser_state)
                         .map(|right| (left, right))
                         .map_err(|err| {
-                            parser_input.move_slice_start_back();
+                            parser_state.move_slice_start_back();
                             err
                         })
                 }
@@ -169,10 +169,10 @@ impl<TResult> Combinator<TResult> {
     {
         let next_parser =
             Box::new(
-                move |parser_input: &mut ParserInput| {
+                move |parser_state: &mut ParserState| {
                     let self_parser = self.parser;
 
-                    self_parser(parser_input).or_else(|_|other_parser(parser_input))
+                    self_parser(parser_state).or_else(|_|other_parser(parser_state))
                 }
             );
 
@@ -184,14 +184,14 @@ impl<TResult> Combinator<TResult> {
     {
         let next_parser =
             Box::new(
-                move |parser_input: &mut ParserInput| {
+                move |parser_state: &mut ParserState| {
                     let self_parser = self.parser;
-                    let prev = self_parser(parser_input)?;
+                    let prev = self_parser(parser_state)?;
 
-                    other_parser(parser_input)
+                    other_parser(parser_state)
                         .map(|_|prev)
                         .map_err(|err| {
-                            parser_input.move_input_state_back();
+                            parser_state.move_input_state_back();
                             err
                         })
                 }
@@ -205,14 +205,14 @@ impl<TResult> Combinator<TResult> {
     {
         let next_parser =
             Box::new(
-                move |parser_input: &mut ParserInput| {
+                move |parser_state: &mut ParserState| {
                     let self_parser = self.parser;
 
-                    match self_parser(parser_input) {
+                    match self_parser(parser_state) {
                         Ok(_) => 
-                            other_parser(parser_input),
+                            other_parser(parser_state),
                         Err(err) => {
-                            parser_input.move_input_state_back();
+                            parser_state.move_input_state_back();
                             Err(err)
                         }
                     }
@@ -227,9 +227,9 @@ impl<TResult> Combinator<TResult> {
     {
         let next_parser =
             Box::new(
-                move |parser_input: &mut ParserInput| {
+                move |parser_state: &mut ParserState| {
                     let self_parser = self.parser;
-                    let result = self_parser(parser_input)?;
+                    let result = self_parser(parser_state)?;
 
                     Ok(f(result))
                 }
@@ -240,9 +240,9 @@ impl<TResult> Combinator<TResult> {
 
     pub fn run(self, input: String) -> ParserResult<TResult> {
         let parser = self.parser;
-        let mut parser_input = ParserInput::new(input);
+        let mut parser_state = ParserState::new(input);
 
-        parser(&mut parser_input)
+        parser(&mut parser_state)
     }
 
 
@@ -250,8 +250,8 @@ impl<TResult> Combinator<TResult> {
 
 pub fn ws() -> Parser<()> {
     Box::new(
-        move |parser_input: &mut ParserInput| {
-            let chars: Vec<char> = parser_input.current_slice().chars().collect();
+        move |parser_state: &mut ParserState| {
+            let chars: Vec<char> = parser_state.current_slice().chars().collect();
             
             let mut ws_char_count = 0;
 
@@ -263,7 +263,7 @@ pub fn ws() -> Parser<()> {
                 }
             }
 
-            parser_input.move_input_state_forward(ws_char_count);
+            parser_state.move_input_state_forward(ws_char_count);
             
             Ok(())
         }
@@ -272,12 +272,12 @@ pub fn ws() -> Parser<()> {
 
 pub fn p_char(target_char: char) -> Parser<char> {
     Box::new(
-    move |parser_input: &mut ParserInput| 
-        match parser_input.len() {
+    move |parser_state: &mut ParserState| 
+        match parser_state.len() {
             0 => {
                 let err = ParserError::new(
-                    parser_input.get_line_number(),
-                    parser_input.get_column_number(),
+                    parser_state.get_line_number(),
+                    parser_state.get_column_number(),
                     target_char.to_string(),
                     None
                 );
@@ -286,16 +286,16 @@ pub fn p_char(target_char: char) -> Parser<char> {
             },
             
             _ => {
-                let chars: Vec<char> = parser_input.current_slice().chars().collect();
+                let chars: Vec<char> = parser_state.current_slice().chars().collect();
                 let source_char = chars[0];
 
                 if source_char == target_char {
-                    parser_input.move_input_state_forward(1);
+                    parser_state.move_input_state_forward(1);
                     Ok(source_char)
                 } else {
                     let err = ParserError::new(
-                        parser_input.get_line_number(),
-                        parser_input.get_column_number(),
+                        parser_state.get_line_number(),
+                        parser_state.get_column_number(),
                         target_char.to_string(),
                         Some(source_char.to_string())
                     );
@@ -309,18 +309,18 @@ pub fn p_char(target_char: char) -> Parser<char> {
 
 pub fn p_string(target_string: String) -> Parser<String> {
     Box::new(
-        move |parser_input: &mut ParserInput| {
-            let source_string = parser_input.get_slice(target_string.len());
+        move |parser_state: &mut ParserState| {
+            let source_string = parser_state.get_slice(target_string.len());
 
             match source_string {
                 Some(source) => {
                     if target_string == source {
-                        parser_input.move_input_state_forward(target_string.len());
+                        parser_state.move_input_state_forward(target_string.len());
                         Ok(String::from(source))
                     } else {
                         let err = ParserError::new(
-                            parser_input.get_line_number(),
-                            parser_input.get_column_number(),
+                            parser_state.get_line_number(),
+                            parser_state.get_column_number(),
                             target_string,
                             Some(source)
                         );
@@ -330,8 +330,8 @@ pub fn p_string(target_string: String) -> Parser<String> {
                 },
                 None => {
                     let err = ParserError::new(
-                        parser_input.get_line_number(),
-                        parser_input.get_column_number(),
+                        parser_state.get_line_number(),
+                        parser_state.get_column_number(),
                         target_string,
                         None
                     );
