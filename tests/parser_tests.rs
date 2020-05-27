@@ -362,4 +362,27 @@ mod tests {
 
         assert_eq!(expected, actual);
     }
+
+    #[test]
+    fn fails_parsing_integer_value() {
+        let expected = String::from("expected 'integral value' but found unknown error at line 1, column 1");
+
+        let actual =
+            Combinator::new(p_int())
+            .run(String::from("abc"));
+
+        assert_eq!(expected, actual.unwrap_err().to_err_msg());
+    }
+
+    #[test]
+    fn succeeds_parsing_integer_value_followed_by_string() {
+        let expected = Ok((123, String::from("abc")));
+
+        let actual =
+            Combinator::new(p_int())
+            .and(p_string(String::from("abc")))
+            .run(String::from("123abc"));
+
+        assert_eq!(expected, actual);
+    }
 }
