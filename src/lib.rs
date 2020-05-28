@@ -2,8 +2,8 @@ pub struct ParserState {
     input: String,
     current_slice_start: usize,
     prev_slice_start: Vec<usize>,
-    current_newline: isize,
-    prev_newline: Vec<isize>,
+    current_line_start: LineStart,
+    prev_line_start: Vec<LineStart>,
 }
 
 impl ParserState {
@@ -13,8 +13,8 @@ impl ParserState {
             input,
             current_slice_start: 0,
             prev_slice_start: vec![0],
-            current_newline: -1,
-            prev_newline: vec![],
+            current_line_start: LineStart::FirstLine,
+            prev_line_start: vec![],
         }
     }
 
@@ -50,8 +50,9 @@ impl ParserState {
 
         for c in chars {
             if c == '\n' {
-                self.prev_newline.push(self.current_newline);
-                self.current_newline = (self.current_slice_start + char_index) as isize;
+                self.prev_line_start.push(self.current_line_start.clone());
+                
+                self.current_line_start = LineStart::Index(self.current_slice_start + char_index);
             }
             
             char_index += 1;
@@ -68,11 +69,20 @@ impl ParserState {
     }
 
     fn move_newlines_back(&mut self) {
-        while *self.prev_newline.last().unwrap_or(&0) > self.current_slice_start as isize {
-            self.prev_newline.pop();
+        while ParserState::line_start_is_greater_than_slice_start(self.prev_line_start.last(), self.current_slice_start) {
+            self.prev_line_start.pop();
         }
 
-        self.current_newline = self.prev_newline.pop().unwrap_or(-1);
+        self.current_line_start = 
+            self.prev_line_start.pop()
+                .unwrap_or(LineStart::FirstLine);
+    }
+
+    fn line_start_is_greater_than_slice_start(line_start: Option<&LineStart>, slice_start: usize) -> bool {
+        match line_start {
+            Some(LineStart::Index(i)) => *i > slice_start,
+            _ => false
+        }
     }
 
     fn get_slice(&self, length: usize) -> Option<String> {
@@ -87,12 +97,21 @@ impl ParserState {
     }
 
     fn get_line_number(&self) -> usize {
-        self.prev_newline.len() + 1
+        self.prev_line_start.len() + 1
     }
 
     fn get_column_number(&self) -> usize {
-        (self.current_slice_start as isize - self.current_newline) as usize
+        match self.current_line_start {
+            LineStart::FirstLine => self.current_slice_start + 1,
+            LineStart::Index(index) => self.current_slice_start - index,
+        }
     }
+}
+
+#[derive(Clone)]
+pub enum LineStart {
+    FirstLine,
+    Index(usize),
 }
 
 #[derive(Debug, PartialEq)]
