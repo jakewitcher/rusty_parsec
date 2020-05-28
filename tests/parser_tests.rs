@@ -357,8 +357,19 @@ mod tests {
         let expected = Ok(123);
 
         let actual =
-            Combinator::new(p_int())
-            .run(String::from("123abc"));
+            Combinator::new(p_int32())
+                .run(String::from("123abc"));
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn succeeds_parsing_negative_integer_value() {
+        let expected = Ok(-123);
+
+        let actual =
+            Combinator::new(p_int32())
+                .run(String::from("-123abc"));
 
         assert_eq!(expected, actual);
     }
@@ -368,10 +379,32 @@ mod tests {
         let expected = String::from("expected 'integral value' but found unknown error at line 1, column 1");
 
         let actual =
-            Combinator::new(p_int())
+            Combinator::new(p_int32())
             .run(String::from("abc"));
 
         assert_eq!(expected, actual.unwrap_err().to_err_msg());
+    }
+
+    #[test]
+    fn fails_parsing_integer_value_greater_than_i32_max() {
+        let expected = String::from("expected 'integral value' but found unknown error at line 1, column 1");
+
+        let actual =
+            Combinator::new(p_int32())
+            .run(String::from("2147483900"));
+
+        assert_eq!(expected, actual.unwrap_err().to_err_msg());
+    }
+
+    #[test]
+    fn succeeds_parsing_integer_value_as_i64() {
+        let expected = Ok(2147483900);
+
+        let actual =
+            Combinator::new(p_int64())
+            .run(String::from("2147483900"));
+
+        assert_eq!(expected, actual);
     }
 
     #[test]
@@ -379,9 +412,21 @@ mod tests {
         let expected = Ok((123, String::from("abc")));
 
         let actual =
-            Combinator::new(p_int())
-            .and(p_string(String::from("abc")))
-            .run(String::from("123abc"));
+            Combinator::new(p_int32())
+                .and(p_string(String::from("abc")))
+                .run(String::from("123abc"));
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn succeeds_parsing_string_followed_by_negative_integer_value() {
+        let expected = Ok(-123);
+
+        let actual =
+            Combinator::new(p_string(String::from("abc")))
+                .take_next(p_int32())
+                .run(String::from("abc-123"));
 
         assert_eq!(expected, actual);
     }

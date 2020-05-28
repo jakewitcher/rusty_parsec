@@ -360,12 +360,12 @@ pub fn p_string(target_string: String) -> Parser<String> {
     )
 }
 
-pub fn p_int() -> Parser<u32> {
+pub fn p_int32() -> Parser<i32> {
     Box::new(
         move |parser_state: &mut ParserState| {
             let chars: Vec<char> = parser_state.current_slice().chars().collect();
             
-            let mut ws_char_count = 0;
+            let mut int_char_count = 0;
 
             let err = ParserError::new(
                 parser_state.get_line_number(),
@@ -375,24 +375,69 @@ pub fn p_int() -> Parser<u32> {
             );
 
             for c in chars  {
-                if c.is_numeric() {
-                    ws_char_count += 1;
+                if c.is_numeric() || c == '-' && int_char_count == 0 {
+                    int_char_count += 1;
                 } else {
                     break;
                 }
             }
 
-            if ws_char_count == 0 {
+            if int_char_count == 0 {
                 Err(err)
             } else {
-                let int_slice = parser_state.get_slice(ws_char_count);
+                let int_slice = parser_state.get_slice(int_char_count);
 
                 match int_slice {
                     Some(slice) => {
-                        let integer_result = slice.parse::<u32>();
+                        let integer_result = slice.parse::<i32>();
                         match integer_result {
                             Ok(integer) => {
-                                parser_state.move_input_state_forward(ws_char_count);
+                                parser_state.move_input_state_forward(int_char_count);
+                                Ok(integer)
+                            },
+                            _ => Err(err)
+                        }
+                    },
+                    _ => Err(err)
+                }
+            }
+        }
+    )
+}
+
+pub fn p_int64() -> Parser<i64> {
+    Box::new(
+        move |parser_state: &mut ParserState| {
+            let chars: Vec<char> = parser_state.current_slice().chars().collect();
+            
+            let mut int_char_count = 0;
+
+            let err = ParserError::new(
+                parser_state.get_line_number(),
+                parser_state.get_column_number(),
+                "integral value".to_string(),
+                None
+            );
+
+            for c in chars  {
+                if c.is_numeric() || c == '-' && int_char_count == 0 {
+                    int_char_count += 1;
+                } else {
+                    break;
+                }
+            }
+
+            if int_char_count == 0 {
+                Err(err)
+            } else {
+                let int_slice = parser_state.get_slice(int_char_count);
+
+                match int_slice {
+                    Some(slice) => {
+                        let integer_result = slice.parse::<i64>();
+                        match integer_result {
+                            Ok(integer) => {
+                                parser_state.move_input_state_forward(int_char_count);
                                 Ok(integer)
                             },
                             _ => Err(err)
