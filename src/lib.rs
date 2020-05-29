@@ -272,13 +272,15 @@ impl<TResult> Combinator<TResult> {
 pub fn ws() -> Parser<()> {
     Box::new(
         move |parser_state: &mut ParserState| {
-            let chars: Vec<char> = parser_state.current_slice().chars().collect();
+            let chars: Vec<char> = 
+                parser_state.current_slice()
+                    .chars().collect();
             
             let mut ws_char_count = 0;
 
             for c in chars  {
                 if c.is_ascii_whitespace() {
-                    ws_char_count += 1;
+                    ws_char_count += c.len_utf8();
                 } else {
                     break;
                 }
@@ -293,34 +295,34 @@ pub fn ws() -> Parser<()> {
 
 pub fn p_char(target_char: char) -> Parser<char> {
     Box::new(
-    move |parser_state: &mut ParserState| 
-        match parser_state.len() {
-            0 => {
-                let err = ParserError::new(
-                    parser_state.get_line_number(),
-                    parser_state.get_column_number(),
-                    target_char.to_string(),
-                    None
-                );
+        move |parser_state: &mut ParserState| {
+            let source_char = 
+                parser_state.get_slice(target_char.len_utf8())
+                    .and_then(|slice|slice.chars().next());
 
-                Err(err)
-            },
-            
-            _ => {
-                let chars: Vec<char> = parser_state.current_slice().chars().collect();
-                let source_char = chars[0];
-
-                if source_char == target_char {
-                    parser_state.move_input_state_forward(1);
-                    Ok(source_char)
-                } else {
+            match source_char {
+                Some(c) if c == target_char => {
+                    parser_state.move_input_state_forward(target_char.len_utf8());
+                    Ok(c)
+                },
+                Some(c) => {
                     let err = ParserError::new(
                         parser_state.get_line_number(),
                         parser_state.get_column_number(),
                         target_char.to_string(),
-                        Some(source_char.to_string())
+                        Some(c.to_string())
                     );
-    
+
+                    Err(err)
+                },
+                _ => {
+                    let err = ParserError::new(
+                        parser_state.get_line_number(),
+                        parser_state.get_column_number(),
+                        target_char.to_string(),
+                        None
+                    );
+
                     Err(err)
                 }
             }
@@ -393,7 +395,9 @@ where T: PrimInt + 'static
 {
     Box::new(
         move |parser_state: &mut ParserState| {
-            let chars: Vec<char> = parser_state.current_slice().chars().collect();
+            let chars: Vec<char> = 
+                parser_state.current_slice()
+                    .chars().collect();
             
             let mut int_char_count = 0;
 
@@ -406,7 +410,7 @@ where T: PrimInt + 'static
 
             for c in chars  {
                 if c.is_numeric() || c == '-' && int_char_count == 0 {
-                    int_char_count += 1;
+                    int_char_count += c.len_utf8();
                 } else {
                     break;
                 }
