@@ -357,7 +357,7 @@ mod tests {
         let expected = Ok(123);
 
         let actual =
-            Combinator::new(p_int32())
+            Combinator::new(p_i32())
                 .run(String::from("123abc"));
 
         assert_eq!(expected, actual);
@@ -368,7 +368,7 @@ mod tests {
         let expected = Ok(-123);
 
         let actual =
-            Combinator::new(p_int32())
+            Combinator::new(p_i32())
                 .run(String::from("-123abc"));
 
         assert_eq!(expected, actual);
@@ -379,7 +379,7 @@ mod tests {
         let expected = String::from("expected 'integral value' but found unknown error at line 1, column 1");
 
         let actual =
-            Combinator::new(p_int32())
+            Combinator::new(p_i32())
             .run(String::from("abc"));
 
         assert_eq!(expected, actual.unwrap_err().to_err_msg());
@@ -390,7 +390,7 @@ mod tests {
         let expected = String::from("expected 'integral value' but found unknown error at line 1, column 1");
 
         let actual =
-            Combinator::new(p_int32())
+            Combinator::new(p_i32())
             .run(String::from("2147483900"));
 
         assert_eq!(expected, actual.unwrap_err().to_err_msg());
@@ -401,7 +401,7 @@ mod tests {
         let expected = Ok(2147483900);
 
         let actual =
-            Combinator::new(p_int64())
+            Combinator::new(p_i64())
             .run(String::from("2147483900"));
 
         assert_eq!(expected, actual);
@@ -412,7 +412,7 @@ mod tests {
         let expected = Ok((123, String::from("abc")));
 
         let actual =
-            Combinator::new(p_int32())
+            Combinator::new(p_i32())
                 .and(p_string(String::from("abc")))
                 .run(String::from("123abc"));
 
@@ -425,7 +425,7 @@ mod tests {
 
         let actual =
             Combinator::new(p_string(String::from("abc")))
-                .take_next(p_int32())
+                .take_next(p_i32())
                 .run(String::from("abc-123"));
 
         assert_eq!(expected, actual);

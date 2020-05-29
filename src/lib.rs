@@ -1,3 +1,7 @@
+extern crate num_traits;
+
+use num_traits::PrimInt;
+
 pub struct ParserState {
     input: String,
     current_slice_start: usize,
@@ -360,52 +364,33 @@ pub fn p_string(target_string: String) -> Parser<String> {
     )
 }
 
-pub fn p_int32() -> Parser<i32> {
-    Box::new(
-        move |parser_state: &mut ParserState| {
-            let chars: Vec<char> = parser_state.current_slice().chars().collect();
-            
-            let mut int_char_count = 0;
-
-            let err = ParserError::new(
-                parser_state.get_line_number(),
-                parser_state.get_column_number(),
-                "integral value".to_string(),
-                None
-            );
-
-            for c in chars  {
-                if c.is_numeric() || c == '-' && int_char_count == 0 {
-                    int_char_count += 1;
-                } else {
-                    break;
-                }
-            }
-
-            if int_char_count == 0 {
-                Err(err)
-            } else {
-                let int_slice = parser_state.get_slice(int_char_count);
-
-                match int_slice {
-                    Some(slice) => {
-                        let integer_result = slice.parse::<i32>();
-                        match integer_result {
-                            Ok(integer) => {
-                                parser_state.move_input_state_forward(int_char_count);
-                                Ok(integer)
-                            },
-                            _ => Err(err)
-                        }
-                    },
-                    _ => Err(err)
-                }
-            }
-        }
-    )
+pub fn p_i32() -> Parser<i32> {
+    p_int(Box::new(|slice: String| slice.parse::<i32>()))
 }
 
-pub fn p_int64() -> Parser<i64> {
+pub fn p_i64() -> Parser<i64> {
+    p_int(Box::new(|slice: String| slice.parse::<i64>()))
+}
+
+pub fn p_u32() -> Parser<u32> {
+    p_int(Box::new(|slice: String| slice.parse::<u32>()))
+}
+
+pub fn p_u64() -> Parser<u64> {
+    p_int(Box::new(|slice: String| slice.parse::<u64>()))
+}
+
+pub fn p_isize() -> Parser<isize> {
+    p_int(Box::new(|slice: String| slice.parse::<isize>()))
+}
+
+pub fn p_iusize() -> Parser<usize> {
+    p_int(Box::new(|slice: String| slice.parse::<usize>()))
+}
+
+fn p_int<T>(parse_num: Box<dyn Fn(String) -> Result<T, std::num::ParseIntError>>) -> Parser<T> 
+where T: PrimInt + 'static
+{
     Box::new(
         move |parser_state: &mut ParserState| {
             let chars: Vec<char> = parser_state.current_slice().chars().collect();
@@ -434,7 +419,7 @@ pub fn p_int64() -> Parser<i64> {
 
                 match int_slice {
                     Some(slice) => {
-                        let integer_result = slice.parse::<i64>();
+                        let integer_result = parse_num(slice);
                         match integer_result {
                             Ok(integer) => {
                                 parser_state.move_input_state_forward(int_char_count);
