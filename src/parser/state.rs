@@ -1,3 +1,9 @@
+#[derive(Clone, Debug, PartialEq)]
+pub enum LineStart {
+    FirstLine,
+    Index(usize),
+}
+
 pub struct ParserState {
     input: String,
     current_slice_start: usize,
@@ -22,15 +28,28 @@ impl ParserState {
         self.input.len()
     }
 
-    pub fn current_slice(&self) -> &str {
-        if self.current_slice_start >= self.len() {
-            panic!("starting index of current slice exceeds length of parser input")
+    pub fn get_remaining_input(&self) -> &str {
+        if self.current_slice_start > self.len() {
+            panic!(
+                format!("starting slice at {} will exceed the input length of {}",
+                self.current_slice_start,
+                self.len())
+            )
         }
 
         &self.input[self.current_slice_start..]
     }
 
     pub fn move_input_state_forward(&mut self, increment: usize) {
+        if self.current_slice_start + increment > self.len() {
+            panic!(
+                format!("incrementing starting index {} by {} will exceed the input length of {}",
+                self.current_slice_start, 
+                increment, 
+                self.len())
+            );
+        }
+
         self.move_newlines_forward(increment);
         self.move_slice_start_forward(increment);
     }
@@ -41,10 +60,9 @@ impl ParserState {
     }
 
     fn move_newlines_forward(&mut self, increment: usize) {
-        let current = self.current_slice_start;
-        let new = current + increment;
+        let current_slice = 
+            self.get_slice(increment).unwrap_or_default();
 
-        let current_slice = &self.input[current..new];
         let chars: Vec<char> = current_slice.chars().collect();
         let mut char_index = 0;
 
@@ -55,7 +73,7 @@ impl ParserState {
                 self.current_line_start = LineStart::Index(self.current_slice_start + char_index);
             }
             
-            char_index += 1;
+            char_index += c.len_utf8();
         }
     }
 
@@ -108,8 +126,73 @@ impl ParserState {
     }
 }
 
-#[derive(Clone)]
-pub enum LineStart {
-    FirstLine,
-    Index(usize),
+#[cfg(test)]
+mod tests {
+    use super::{LineStart, ParserState};
+
+    #[test]
+    fn gets_remaining_slice_of_input_to_be_parsed() {
+        let mut parser_state = ParserState::new(String::from("hello, world"));
+        
+        parser_state.move_input_state_forward("hello".len());
+        let remaining_input = parser_state.get_remaining_input();
+
+        assert_eq!(", world", remaining_input);
+    }
+
+    #[test]
+    #[should_panic(expected = "will exceed the input length")]
+    fn get_remaining_slice_panics_if_slice_start_exceeds_input_length() {
+        let mut parser_state = ParserState::new(String::from("hello"));
+        parser_state.current_slice_start = 7;
+        parser_state.get_remaining_input();
+    }
+
+    #[test]
+    fn move_input_state_forward_increments_current_slice_start_by_one() {
+        let mut parser_state = ParserState::new(String::from("hello"));
+        
+        parser_state.move_input_state_forward('h'.len_utf8());
+
+        assert_eq!('h'.len_utf8(), parser_state.current_slice_start);
+    }
+
+    #[test]
+    fn move_input_state_forward_increments_current_slice_start_by_many() {
+        let mut parser_state = ParserState::new(String::from("hello, world"));
+        
+        parser_state.move_input_state_forward("hello".len());
+
+        assert_eq!("hello".len(), parser_state.current_slice_start);
+    }
+
+    #[test]
+    fn move_input_state_forward_increments_current_line_start() {
+        let mut parser_state = ParserState::new(String::from("hello\nworld"));
+        
+        parser_state.move_input_state_forward("hello\nwo".len());
+
+        let expected = LineStart::Index(5);
+
+        assert_eq!(expected, parser_state.current_line_start);
+    }
+
+    #[test]
+    fn move_input_state_forward_does_not_increment_current_line_start() {
+        let mut parser_state = ParserState::new(String::from("hello\nworld"));
+        
+        parser_state.move_input_state_forward("hello".len());
+
+        let expected = LineStart::FirstLine;
+
+        assert_eq!(expected, parser_state.current_line_start);
+    }
+
+    #[test]
+    #[should_panic(expected = "will exceed the input length")]
+    fn move_input_state_forward_panics_if_increment_exceeds_input_length() {
+        let mut parser_state = ParserState::new(String::from("hello"));
+
+        parser_state.move_input_state_forward(7);
+    }
 }

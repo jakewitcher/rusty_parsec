@@ -107,7 +107,7 @@ where T: PrimInt + 'static
     Box::new(
         move |parser_state: &mut ParserState| {
             let chars: Vec<char> = 
-                parser_state.current_slice()
+                parser_state.get_remaining_input()
                     .chars().collect();
             
             let mut int_char_count = 0;
@@ -154,7 +154,7 @@ pub fn ws() -> Parser<()> {
     Box::new(
         move |parser_state: &mut ParserState| {
             let chars: Vec<char> = 
-                parser_state.current_slice()
+                parser_state.get_remaining_input()
                     .chars().collect();
             
             let mut ws_char_count = 0;
