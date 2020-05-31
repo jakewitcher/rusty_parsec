@@ -81,7 +81,14 @@ impl<TResult> Combinator<TResult> {
                 move |parser_state: &mut ParserState| {
                     let self_parser = self.parser;
 
-                    self_parser(parser_state).and(other_parser(parser_state))
+                    self_parser(parser_state)
+                        .and(match other_parser(parser_state) {
+                            Ok(next) => Ok(next),
+                            Err(err) => {
+                                parser_state.move_input_state_back();
+                                Err(err)
+                            }
+                        })
                 }
             );
 
