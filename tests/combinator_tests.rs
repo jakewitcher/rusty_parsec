@@ -236,3 +236,31 @@ fn tracks_line_and_column_number_for_error_messaging() {
 
     assert_eq!(expected, actual.unwrap_err().to_err_msg());
 }
+
+#[test]
+fn succeeds_parsing_then_return() {
+    let expected = Ok(true);
+
+    let p_true = p_string(String::from("true"));
+
+    let actual =
+        Combinator::new(p_true)
+            .then_return(true)
+            .run(String::from("true"));
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_then_return() {
+    let expected = String::from("expected 'true' but found 'blue' at line 1, column 1");
+
+    let p_true = p_string(String::from("true"));
+
+    let actual =
+        Combinator::new(p_true)
+            .then_return(true)
+            .run(String::from("blue"));
+
+    assert_eq!(expected, actual.unwrap_err().to_err_msg());
+}

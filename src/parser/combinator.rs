@@ -95,6 +95,28 @@ impl<TResult> Combinator<TResult> {
         Combinator::new(next_parser)
     }
 
+    pub fn then_return<UResult>(self, return_value: UResult) -> Combinator<UResult>
+    where UResult: 'static
+    {
+        let next_parser =
+            Box::new(
+                move |parser_state: &mut ParserState| {
+                    let self_parser = self.parser;
+
+                    match self_parser(parser_state) {
+                        Ok(_) => 
+                            Ok(return_value),
+                        Err(err) => {
+                            parser_state.move_input_state_back();
+                            Err(err)
+                        }
+                    }
+                }
+            );
+
+        Combinator::new(next_parser)
+    }
+
     pub fn map<UResult>(self, f: Box<dyn Fn(TResult) -> UResult>) -> Combinator<UResult>
     where UResult: 'static
     {
@@ -117,6 +139,4 @@ impl<TResult> Combinator<TResult> {
 
         parser(&mut parser_state)
     }
-
-
 }
