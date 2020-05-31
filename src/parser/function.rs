@@ -2,7 +2,7 @@ use super::Parser;
 use super::state::ParserState;
 use super::error::ParserError;
 
-use num_traits::PrimInt;
+use num_traits::{Float, PrimInt};
 
 pub fn p_char(target_char: char) -> Parser<char> {
     Box::new(
@@ -139,6 +139,69 @@ where T: PrimInt + 'static
                             Ok(integer) => {
                                 parser_state.move_input_state_forward(int_char_count);
                                 Ok(integer)
+                            },
+                            _ => Err(err)
+                        }
+                    },
+                    _ => Err(err)
+                }
+            }
+        }
+    )
+}
+
+pub fn p_f32() -> Parser<f32> {
+    p_float(Box::new(|slice: String| slice.parse::<f32>()))
+}
+
+pub fn p_f64() -> Parser<f64> {
+    p_float(Box::new(|slice: String| slice.parse::<f64>()))
+}
+
+fn p_float<T>(parse_num: Box<dyn Fn(String) -> Result<T, std::num::ParseFloatError>>) -> Parser<T> 
+where T: Float + 'static
+{
+    Box::new(
+        move |parser_state: &mut ParserState| {
+            let chars: Vec<char> = 
+                parser_state.get_remaining_input()
+                    .chars().collect();
+            
+            let mut int_char_count = 0;
+
+            let err = ParserError::new(
+                parser_state.get_line_number(),
+                parser_state.get_column_number(),
+                "floating point value".to_string(),
+                None
+            );
+
+            let mut has_decimal_point = false;
+
+            for c in chars  {
+                if c.is_numeric() || c == '-' && int_char_count == 0 {
+                    int_char_count += c.len_utf8();
+                } else if c == '.' && has_decimal_point == false {
+                    has_decimal_point = true;
+                    int_char_count += c.len_utf8();
+                } else {
+                    break;
+                }
+            }
+
+            if int_char_count == 0 {
+                Err(err)
+            } else {
+                let int_slice = parser_state.get_slice(int_char_count);
+
+                match int_slice {
+                    Some(slice) => {
+                        let float_result = parse_num(slice);
+                        match float_result {
+                            Ok(float) if float.is_infinite() => Err(err),
+                            Ok(float) => {
+                                parser_state.move_input_state_forward(int_char_count);
+                                Ok(float)
                             },
                             _ => Err(err)
                         }

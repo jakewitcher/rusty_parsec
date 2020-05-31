@@ -194,3 +194,69 @@ fn succeeds_parsing_with_p_string_followed_by_p_i32() {
 
     assert_eq!(expected, actual);
 }
+
+#[test]
+fn succeeds_parsing_with_p_f32() {
+    let expected = Ok(123.35);
+
+    let actual =
+        Combinator::new(p_f32())
+            .run(String::from("123.35abc"));
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn succeeds_parsing_with_p_f32_followed_by_period() {
+    let expected = Ok(123.35);
+
+    let actual =
+        Combinator::new(p_f32())
+            .run(String::from("123.35.abc"));
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn succeeds_parsing_negative_integer_with_p_f32() {
+    let expected = Ok(-123.35);
+
+    let actual =
+        Combinator::new(p_f32())
+            .run(String::from("-123.35abc"));
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_with_p_f32() {
+    let expected = String::from("expected 'floating point value' but found unknown error at line 1, column 1");
+
+    let actual =
+        Combinator::new(p_f32())
+        .run(String::from("abc"));
+
+    assert_eq!(expected, actual.unwrap_err().to_err_msg());
+}
+
+#[test]
+fn fails_parsing_with_p_f32_integer_greater_than_i32_max() {
+    let expected = String::from("expected 'floating point value' but found unknown error at line 1, column 1");
+
+    let actual =
+        Combinator::new(p_f32())
+        .run(String::from("340282500000000000000000000000000000000"));
+
+    assert_eq!(expected, actual.unwrap_err().to_err_msg());
+}
+
+#[test]
+fn succeeds_parsing_with_p_f64() {
+    let expected = Ok(340282500000000000000000000000000000000.12);
+
+    let actual =
+        Combinator::new(p_f64())
+        .run(String::from("340282500000000000000000000000000000000.12"));
+
+    assert_eq!(expected, actual);
+}
