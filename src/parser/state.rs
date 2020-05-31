@@ -83,7 +83,18 @@ impl ParserState {
     }
 
     fn move_slice_start_back(&mut self) {
-        self.current_slice_start = self.prev_slice_start.pop().unwrap();
+        match self.prev_slice_start.pop() {
+            Some(0) if self.prev_slice_start.is_empty() => {
+                self.prev_slice_start = vec![0];
+                self.current_slice_start = 0;
+            },
+            Some(i) => {
+                self.current_slice_start = i;
+            },
+            None => {
+                panic!("slice start index cannot be moved back, vector of index history is empty")
+            },
+        }
     }
 
     fn move_newlines_back(&mut self) {
@@ -194,5 +205,41 @@ mod tests {
         let mut parser_state = ParserState::new(String::from("hello"));
 
         parser_state.move_input_state_forward(7);
+    }
+
+    #[test]
+    fn move_input_state_back_sets_current_slice_start_back_one() {
+        let mut parser_state = ParserState::new(String::from("hello, world"));
+
+        parser_state.move_input_state_forward("hello".len());
+        parser_state.move_input_state_forward(", ".len());
+
+        assert_eq!(7, parser_state.current_slice_start);
+
+        parser_state.move_input_state_back();
+
+        assert_eq!(5, parser_state.current_slice_start);
+
+        parser_state.move_input_state_back();
+
+        assert_eq!(0, parser_state.current_slice_start);
+    }
+
+    #[test]
+    fn move_input_state_back_sets_current_line_start_back_one() {
+        let mut parser_state = ParserState::new(String::from("hello\n, \nworld"));
+
+        parser_state.move_input_state_forward("hello\n,".len());
+        parser_state.move_input_state_forward(" \nw".len());
+
+        assert_eq!(LineStart::Index(8), parser_state.current_line_start);
+
+        parser_state.move_input_state_back();
+
+        assert_eq!(LineStart::Index(5), parser_state.current_line_start);
+
+        parser_state.move_input_state_back();
+
+        assert_eq!(LineStart::FirstLine, parser_state.current_line_start);
     }
 }
