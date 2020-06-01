@@ -5,85 +5,93 @@ fn succeeds_parsing_with_p_char() {
     let expected = Ok(ParserSuccess::new('a', Position::new(1, 2, 1)));
 
     let actual = 
-        Combinator::new(p_char('a')).run(String::from("abc"));
+        Combinator::new(p_char('a'))
+            .run("abc".to_string());
     
     assert_eq!(expected, actual);
 }
 
 #[test]
 fn fails_parsing_with_p_char() {
-    let expected = String::from("expected 'b' but found 'a' at line 1, column 1");        
+    let expected = Err(ParserFailure::new("b".to_string(), Some("a".to_string()), Position::new(1, 1, 0)));
+    let err_msg = "expected 'b' but found 'a' at line 1, column 1".to_string();
     
     let actual = 
-        Combinator::new(p_char('b')).run(String::from("abc"));
+        Combinator::new(p_char('b'))
+            .run("abc".to_string());
 
-    assert_eq!(expected, actual.unwrap_err().to_err_msg());
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
 fn succeeds_parsing_with_p_string() {    
-    let expected = Ok(ParserSuccess::new(String::from("hello"), Position::new(1, 6, 5)));
+    let expected = Ok(ParserSuccess::new("hello".to_string(), Position::new(1, 6, 5)));
 
-    let p_hello = p_string(String::from("hello"));
+    let p_hello = p_string("hello".to_string());
 
     let actual = 
         Combinator::new(p_hello)
-            .run(String::from("hello, world"));
+            .run("hello, world".to_string());
 
     assert_eq!(expected, actual);
 }
 
 #[test]
 fn fails_parsing_with_p_string() {
-    let expected = String::from("expected 'hello' but found 'chell' at line 1, column 1");
+    let expected = Err(ParserFailure::new("hello".to_string(), Some("chell".to_string()), Position::new(1, 1, 0)));
+    let err_msg = "expected 'hello' but found 'chell' at line 1, column 1".to_string();
     
-    let p_hello = p_string(String::from("hello"));
+    let p_hello = p_string("hello".to_string());
     
     let actual = 
         Combinator::new(p_hello)
-            .run(String::from("chello, world"));
+            .run("chello, world".to_string());
 
-    assert_eq!(expected, actual.unwrap_err().to_err_msg());
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
 fn fails_parsing_with_p_string_when_input_is_too_short() {
-    let expected = String::from("expected 'hello' but found unknown error at line 1, column 1");
+    let expected = Err(ParserFailure::new("hello".to_string(), None, Position::new(1, 1, 0)));
+    let err_msg = "expected 'hello' but found unknown error at line 1, column 1".to_string();
     
-    let p_hello = p_string(String::from("hello"));
+    let p_hello = p_string("hello".to_string());
     
     let actual = 
         Combinator::new(p_hello)
-            .run(String::from("hell"));
+            .run("hell".to_string());
 
-    assert_eq!(expected, actual.unwrap_err().to_err_msg());
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
 fn succeeds_parsing_with_p_char_followed_by_p_string() {
-    let expected = Ok(ParserSuccess::new(String::from("hello"), Position::new(1, 7, 6)));
+    let expected = Ok(ParserSuccess::new("hello".to_string(), Position::new(1, 7, 6)));
     
-    let p_hello = p_string(String::from("hello"));
+    let p_hello = p_string("hello".to_string());
     
     let actual = 
         Combinator::new(p_char('c'))
             .take_next(p_hello)
-            .run(String::from("chello"));
+            .run("chello".to_string());
 
     assert_eq!(expected, actual);
 }
 
 #[test]
 fn succeeds_parsing_with_p_string_followed_by_p_string() {
-    let expected = Ok(ParserSuccess::new((String::from("hello"), String::from("world")), Position::new(1, 11, 10)));
+    let expected = Ok(ParserSuccess::new(("hello".to_string(), "world".to_string()), Position::new(1, 11, 10)));
     
-    let p_hello = p_string(String::from("hello"));
-    let p_world = p_string(String::from("world"));
+    let p_hello = p_string("hello".to_string());
+    let p_world = p_string("world".to_string());
     
     let actual = 
         Combinator::new(p_hello)
             .and(p_world)
-            .run(String::from("helloworld"));
+            .run("helloworld".to_string());
 
     assert_eq!(expected, actual);
 }
@@ -97,23 +105,25 @@ fn succeeds_parsing_whitespace_with_ws() {
             .take_next(p_char('a'))
             .take_prev(ws())
             .and(p_char('b'))
-            .run(String::from("  \na\t  \r\nb"));
+            .run("  \na\t  \r\nb".to_string());
 
     assert_eq!(expected, actual);
 }
 
 #[test]
 fn fails_parsing_whitespace_with_ws() {
-    let expected = String::from("expected 'b' but found 'c' at line 3, column 1");
+    let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), Position::new(3, 1, 9)));
+    let err_msg = "expected 'b' but found 'c' at line 3, column 1".to_string();
 
     let actual = 
         Combinator::new(ws())
             .take_next(p_char('a'))
             .take_prev(ws())
             .and(p_char('b'))
-            .run(String::from("  \na\t  \r\nc"));
+            .run("  \na\t  \r\nc".to_string());
 
-    assert_eq!(expected, actual.unwrap_err().to_err_msg());
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
@@ -122,7 +132,7 @@ fn succeeds_parsing_with_p_u32() {
 
     let actual =
         Combinator::new(p_u32())
-            .run(String::from("123abc"));
+            .run("123abc".to_string());
 
     assert_eq!(expected, actual);
 }
@@ -133,31 +143,35 @@ fn succeeds_parsing_negative_integer_with_p_i32() {
 
     let actual =
         Combinator::new(p_i32())
-            .run(String::from("-123abc"));
+            .run("-123abc".to_string());
 
     assert_eq!(expected, actual);
 }
 
 #[test]
 fn fails_parsing_with_p_i32() {
-    let expected = String::from("expected 'integral value' but found unknown error at line 1, column 1");
+    let expected = Err(ParserFailure::new("integral value".to_string(), None, Position::new(1, 1, 0)));
+    let err_msg = "expected 'integral value' but found unknown error at line 1, column 1".to_string();
 
     let actual =
         Combinator::new(p_i32())
-        .run(String::from("abc"));
+            .run("abc".to_string());
 
-    assert_eq!(expected, actual.unwrap_err().to_err_msg());
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
 fn fails_parsing_with_p_i32_integer_greater_than_i32_max() {
-    let expected = String::from("expected 'integral value' but found unknown error at line 1, column 1");
+    let expected = Err(ParserFailure::new("integral value".to_string(), None, Position::new(1, 1, 0)));
+    let err_msg = "expected 'integral value' but found unknown error at line 1, column 1".to_string();
 
     let actual =
         Combinator::new(p_i32())
-        .run(String::from("2147483900"));
+            .run("2147483900".to_string());
 
-    assert_eq!(expected, actual.unwrap_err().to_err_msg());
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
@@ -166,19 +180,19 @@ fn succeeds_parsing_with_p_i64() {
 
     let actual =
         Combinator::new(p_i64())
-        .run(String::from("2147483900"));
+            .run("2147483900".to_string());
 
     assert_eq!(expected, actual);
 }
 
 #[test]
 fn succeeds_parsing_with_p_u32_followed_by_p_string() {
-    let expected = Ok(ParserSuccess::new((123, String::from("abc")), Position::new(1, 7, 6)));
+    let expected = Ok(ParserSuccess::new((123, "abc".to_string()), Position::new(1, 7, 6)));
 
     let actual =
         Combinator::new(p_u32())
-            .and(p_string(String::from("abc")))
-            .run(String::from("123abc"));
+            .and(p_string("abc".to_string()))
+            .run("123abc".to_string());
 
     assert_eq!(expected, actual);
 }
@@ -188,9 +202,9 @@ fn succeeds_parsing_with_p_string_followed_by_p_i32() {
     let expected = Ok(ParserSuccess::new(-123, Position::new(1, 8, 7)));
 
     let actual =
-        Combinator::new(p_string(String::from("abc")))
+        Combinator::new(p_string("abc".to_string()))
             .take_next(p_i32())
-            .run(String::from("abc-123"));
+            .run("abc-123".to_string());
 
     assert_eq!(expected, actual);
 }
@@ -201,7 +215,7 @@ fn succeeds_parsing_with_p_f32() {
 
     let actual =
         Combinator::new(p_f32())
-            .run(String::from("123.35abc"));
+            .run("123.35abc".to_string());
 
     assert_eq!(expected, actual);
 }
@@ -212,7 +226,7 @@ fn succeeds_parsing_with_p_f32_followed_by_period() {
 
     let actual =
         Combinator::new(p_f32())
-            .run(String::from("123.35.abc"));
+            .run("123.35.abc".to_string());
 
     assert_eq!(expected, actual);
 }
@@ -223,31 +237,35 @@ fn succeeds_parsing_negative_integer_with_p_f32() {
 
     let actual =
         Combinator::new(p_f32())
-            .run(String::from("-123.35abc"));
+            .run("-123.35abc".to_string());
 
     assert_eq!(expected, actual);
 }
 
 #[test]
 fn fails_parsing_with_p_f32() {
-    let expected = String::from("expected 'floating point value' but found unknown error at line 1, column 1");
+    let expected = Err(ParserFailure::new("floating point value".to_string(), None, Position::new(1, 1, 0)));
+    let err_msg = "expected 'floating point value' but found unknown error at line 1, column 1".to_string();
 
     let actual =
         Combinator::new(p_f32())
-        .run(String::from("abc"));
+            .run("abc".to_string());
 
-    assert_eq!(expected, actual.unwrap_err().to_err_msg());
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
 fn fails_parsing_with_p_f32_integer_greater_than_i32_max() {
-    let expected = String::from("expected 'floating point value' but found unknown error at line 1, column 1");
+    let expected = Err(ParserFailure::new("floating point value".to_string(), None, Position::new(1, 1, 0)));
+    let err_msg = "expected 'floating point value' but found unknown error at line 1, column 1".to_string();
 
     let actual =
         Combinator::new(p_f32())
-        .run(String::from("340282500000000000000000000000000000000"));
+            .run("340282500000000000000000000000000000000".to_string());
 
-    assert_eq!(expected, actual.unwrap_err().to_err_msg());
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
@@ -256,7 +274,7 @@ fn succeeds_parsing_with_p_f64() {
 
     let actual =
         Combinator::new(p_f64())
-        .run(String::from("340282500000000000000000000000000000000.12"));
+            .run("340282500000000000000000000000000000000.12".to_string());
 
     assert_eq!(expected, actual);
 }
