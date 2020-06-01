@@ -1,6 +1,6 @@
 use super::Parser;
 use super::state::ParserState;
-use super::error::ParserError;
+use super::result::{ParserSuccess, ParserFailure};
 
 use num_traits::{Float, PrimInt};
 
@@ -14,24 +14,25 @@ pub fn p_char(target_char: char) -> Parser<char> {
             match source_char {
                 Some(c) if c == target_char => {
                     parser_state.move_input_state_forward(target_char.len_utf8());
-                    Ok(c)
+
+                    let success = ParserSuccess::new(c, parser_state.get_position());
+                    
+                    Ok(success)
                 },
                 Some(c) => {
-                    let err = ParserError::new(
-                        parser_state.get_line_number(),
-                        parser_state.get_column_number(),
+                    let err = ParserFailure::new(
                         target_char.to_string(),
-                        Some(c.to_string())
+                        Some(c.to_string()),
+                        parser_state.get_position()
                     );
 
                     Err(err)
                 },
                 _ => {
-                    let err = ParserError::new(
-                        parser_state.get_line_number(),
-                        parser_state.get_column_number(),
+                    let err = ParserFailure::new(
                         target_char.to_string(),
-                        None
+                        None,
+                        parser_state.get_position()
                     );
 
                     Err(err)
@@ -50,24 +51,25 @@ pub fn p_string(target_string: String) -> Parser<String> {
                 Some(source) => {
                     if target_string == source {
                         parser_state.move_input_state_forward(target_string.len());
-                        Ok(String::from(source))
+
+                        let success = ParserSuccess::new(source, parser_state.get_position());
+
+                        Ok(success)
                     } else {
-                        let err = ParserError::new(
-                            parser_state.get_line_number(),
-                            parser_state.get_column_number(),
+                        let err = ParserFailure::new(
                             target_string,
-                            Some(source)
+                            Some(source),
+                            parser_state.get_position()
                         );
         
                         Err(err)
                     }
                 },
                 None => {
-                    let err = ParserError::new(
-                        parser_state.get_line_number(),
-                        parser_state.get_column_number(),
+                    let err = ParserFailure::new(
                         target_string,
-                        None
+                        None,
+                        parser_state.get_position()
                     );
     
                     Err(err)
@@ -112,11 +114,10 @@ where T: PrimInt + 'static
             
             let mut int_char_count = 0;
 
-            let err = ParserError::new(
-                parser_state.get_line_number(),
-                parser_state.get_column_number(),
+            let err = ParserFailure::new(
                 "integral value".to_string(),
-                None
+                None,
+                parser_state.get_position()
             );
 
             for c in chars  {
@@ -138,7 +139,10 @@ where T: PrimInt + 'static
                         match integer_result {
                             Ok(integer) => {
                                 parser_state.move_input_state_forward(int_char_count);
-                                Ok(integer)
+
+                                let success = ParserSuccess::new(integer, parser_state.get_position());
+
+                                Ok(success)
                             },
                             _ => Err(err)
                         }
@@ -169,11 +173,10 @@ where T: Float + 'static
             
             let mut int_char_count = 0;
 
-            let err = ParserError::new(
-                parser_state.get_line_number(),
-                parser_state.get_column_number(),
+            let err = ParserFailure::new(
                 "floating point value".to_string(),
-                None
+                None,
+                parser_state.get_position()
             );
 
             let mut has_decimal_point = false;
@@ -201,7 +204,10 @@ where T: Float + 'static
                             Ok(float) if float.is_infinite() => Err(err),
                             Ok(float) => {
                                 parser_state.move_input_state_forward(int_char_count);
-                                Ok(float)
+
+                                let success = ParserSuccess::new(float, parser_state.get_position());
+                                
+                                Ok(success)
                             },
                             _ => Err(err)
                         }
@@ -231,8 +237,8 @@ pub fn ws() -> Parser<()> {
             }
 
             parser_state.move_input_state_forward(ws_char_count);
-            
-            Ok(())
+            let success = ParserSuccess::new((), parser_state.get_position());
+            Ok(success)
         }
     )
 }

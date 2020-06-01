@@ -2,7 +2,7 @@ use rusty_parsec::*;
 
 #[test]
 fn succeeds_parsing_with_and() {
-    let expected = Ok(('a', 'b'));
+    let expected = Ok(ParserSuccess::new(('a', 'b'), Position::new(1, 3, 2)));
 
     let actual = 
         Combinator::new(p_char('a'))
@@ -38,7 +38,7 @@ fn fails_parsing_with_and_at_second_parser() {
 
 #[test]
 fn succeeds_parsing_with_or_at_first_parser() {
-    let expected = Ok('a');
+    let expected = Ok(ParserSuccess::new('a', Position::new(1, 2, 1)));
 
     let actual = 
         Combinator::new(p_char('a'))
@@ -50,7 +50,7 @@ fn succeeds_parsing_with_or_at_first_parser() {
 
 #[test]
 fn succeeds_parsing_with_or_at_second_parser() {
-    let expected = Ok('b');
+    let expected = Ok(ParserSuccess::new('b', Position::new(1, 2, 1)));
 
     let actual = 
         Combinator::new(p_char('a'))
@@ -74,7 +74,7 @@ fn fails_parsing_with_or_at_second_parser() {
 
 #[test]
 fn succeeds_parsing_with_and_or_combinators() {
-    let expected = Ok(('b', 'c'));
+    let expected = Ok(ParserSuccess::new(('b', 'c'), Position::new(1, 3, 2)));
 
     let actual = 
         Combinator::new(p_char('a'))
@@ -87,7 +87,7 @@ fn succeeds_parsing_with_and_or_combinators() {
 
 #[test]
 fn succeeds_parsing_with_take_prev() {
-    let expected = Ok('a');
+    let expected = Ok(ParserSuccess::new('a', Position::new(1, 3, 2)));
 
     let actual = 
         Combinator::new(p_char('a'))
@@ -123,7 +123,7 @@ fn fails_parsing_with_take_prev_at_second_parser() {
 
 #[test]
 fn succeeds_parsing_with_take_next() {
-    let expected = Ok('b');
+    let expected = Ok(ParserSuccess::new('b', Position::new(1, 3, 2)));
 
     let actual = 
         Combinator::new(p_char('a'))
@@ -159,7 +159,7 @@ fn fails_parsing_with_take_next_at_second_parser() {
 
 #[test]
 fn succeeds_parsing_with_combinator_of_four_parsers() {
-    let expected = Ok((String::from("hello"), String::from("world")));
+    let expected = Ok(ParserSuccess::new((String::from("hello"), String::from("world")), Position::new(1, 14, 13)));
     
     let p_hello = p_string(String::from("hello"));
     let p_comma = p_string(String::from(", "));
@@ -177,7 +177,7 @@ fn succeeds_parsing_with_combinator_of_four_parsers() {
 
 #[test]
 fn succeeds_parsing_with_combinator_of_combinators() {
-    let expected = Ok((String::from("goodbye"), String::from("world")));
+    let expected = Ok(ParserSuccess::new((String::from("goodbye"), String::from("world")), Position::new(1, 16, 15)));
     
     let p_hello = p_string(String::from("hello"));
     let p_goodbye = p_string(String::from("goodbye"));
@@ -205,7 +205,7 @@ fn succeeds_parsing_with_combinator_of_combinators() {
 
 #[test]
 fn succeeds_parsing_with_map() {
-    let expected = Ok(String::from("hello, world"));
+    let expected = Ok(ParserSuccess::new(String::from("hello, world"), Position::new(1, 6, 5)));
     
     let p_hello = p_string(String::from("hello"));
     let to_hello_world = Box::new(|result: String| format!("{}, world", result));
@@ -239,7 +239,7 @@ fn tracks_line_and_column_number_for_error_messaging() {
 
 #[test]
 fn succeeds_parsing_then_return() {
-    let expected = Ok(true);
+    let expected = Ok(ParserSuccess::new(true, Position::new(1, 5, 4)));
 
     let p_true = p_string(String::from("true"));
 

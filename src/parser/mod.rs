@@ -1,10 +1,10 @@
 pub mod combinator;
-pub mod error;
+pub mod result;
 pub mod function;
 pub mod state;
 
-use error::ParserError;
-use state::ParserState;
+pub use combinator::Combinator;
+pub use state::ParserState;
+pub use result::{Position, ParserSuccess, ParserFailure, ParserResult};
 
-pub type ParserResult<TResult> = Result<TResult, ParserError>;
 pub type Parser<TResult> = Box<dyn FnOnce(&mut ParserState) -> ParserResult<TResult>>;

@@ -1,3 +1,5 @@
+use super::result::Position;
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum LineStart {
     FirstLine,
@@ -125,11 +127,19 @@ impl ParserState {
         }
     }
 
-    pub fn get_line_number(&self) -> usize {
+    pub fn get_position(&self) -> Position {
+        Position::new(self.get_line_number(), self.get_column_number(), self.get_index())
+    }
+
+    fn get_index(&self) -> usize {
+        self.current_slice_start
+    }
+
+    fn get_line_number(&self) -> usize {
         self.prev_line_start.len() + 1
     }
 
-    pub fn get_column_number(&self) -> usize {
+    fn get_column_number(&self) -> usize {
         match self.current_line_start {
             LineStart::FirstLine => self.current_slice_start + 1,
             LineStart::Index(index) => self.current_slice_start - index,

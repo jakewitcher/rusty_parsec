@@ -2,7 +2,7 @@ use rusty_parsec::*;
 
 #[test]
 fn succeeds_parsing_with_p_char() {        
-    let expected = Ok('a');
+    let expected = Ok(ParserSuccess::new('a', Position::new(1, 2, 1)));
 
     let actual = 
         Combinator::new(p_char('a')).run(String::from("abc"));
@@ -22,7 +22,7 @@ fn fails_parsing_with_p_char() {
 
 #[test]
 fn succeeds_parsing_with_p_string() {    
-    let expected = Ok(String::from("hello"));
+    let expected = Ok(ParserSuccess::new(String::from("hello"), Position::new(1, 6, 5)));
 
     let p_hello = p_string(String::from("hello"));
 
@@ -61,7 +61,7 @@ fn fails_parsing_with_p_string_when_input_is_too_short() {
 
 #[test]
 fn succeeds_parsing_with_p_char_followed_by_p_string() {
-    let expected = Ok(String::from("hello"));
+    let expected = Ok(ParserSuccess::new(String::from("hello"), Position::new(1, 7, 6)));
     
     let p_hello = p_string(String::from("hello"));
     
@@ -75,7 +75,7 @@ fn succeeds_parsing_with_p_char_followed_by_p_string() {
 
 #[test]
 fn succeeds_parsing_with_p_string_followed_by_p_string() {
-    let expected = Ok((String::from("hello"), String::from("world")));
+    let expected = Ok(ParserSuccess::new((String::from("hello"), String::from("world")), Position::new(1, 11, 10)));
     
     let p_hello = p_string(String::from("hello"));
     let p_world = p_string(String::from("world"));
@@ -90,7 +90,7 @@ fn succeeds_parsing_with_p_string_followed_by_p_string() {
 
 #[test]
 fn succeeds_parsing_whitespace_with_ws() {
-    let expected = Ok(('a', 'b'));
+    let expected = Ok(ParserSuccess::new(('a', 'b'), Position::new(3, 2, 10)));
 
     let actual = 
         Combinator::new(ws())
@@ -118,7 +118,7 @@ fn fails_parsing_whitespace_with_ws() {
 
 #[test]
 fn succeeds_parsing_with_p_u32() {
-    let expected = Ok(123);
+    let expected = Ok(ParserSuccess::new(123, Position::new(1, 4, 3)));
 
     let actual =
         Combinator::new(p_u32())
@@ -129,7 +129,7 @@ fn succeeds_parsing_with_p_u32() {
 
 #[test]
 fn succeeds_parsing_negative_integer_with_p_i32() {
-    let expected = Ok(-123);
+    let expected = Ok(ParserSuccess::new(-123, Position::new(1, 5, 4)));
 
     let actual =
         Combinator::new(p_i32())
@@ -162,7 +162,7 @@ fn fails_parsing_with_p_i32_integer_greater_than_i32_max() {
 
 #[test]
 fn succeeds_parsing_with_p_i64() {
-    let expected = Ok(2147483900);
+    let expected = Ok(ParserSuccess::new(2147483900, Position::new(1, 11, 10)));
 
     let actual =
         Combinator::new(p_i64())
@@ -173,7 +173,7 @@ fn succeeds_parsing_with_p_i64() {
 
 #[test]
 fn succeeds_parsing_with_p_u32_followed_by_p_string() {
-    let expected = Ok((123, String::from("abc")));
+    let expected = Ok(ParserSuccess::new((123, String::from("abc")), Position::new(1, 7, 6)));
 
     let actual =
         Combinator::new(p_u32())
@@ -185,7 +185,7 @@ fn succeeds_parsing_with_p_u32_followed_by_p_string() {
 
 #[test]
 fn succeeds_parsing_with_p_string_followed_by_p_i32() {
-    let expected = Ok(-123);
+    let expected = Ok(ParserSuccess::new(-123, Position::new(1, 8, 7)));
 
     let actual =
         Combinator::new(p_string(String::from("abc")))
@@ -197,7 +197,7 @@ fn succeeds_parsing_with_p_string_followed_by_p_i32() {
 
 #[test]
 fn succeeds_parsing_with_p_f32() {
-    let expected = Ok(123.35);
+    let expected = Ok(ParserSuccess::new(123.35, Position::new(1, 7, 6)));
 
     let actual =
         Combinator::new(p_f32())
@@ -208,7 +208,7 @@ fn succeeds_parsing_with_p_f32() {
 
 #[test]
 fn succeeds_parsing_with_p_f32_followed_by_period() {
-    let expected = Ok(123.35);
+    let expected = Ok(ParserSuccess::new(123.35, Position::new(1, 7, 6)));
 
     let actual =
         Combinator::new(p_f32())
@@ -219,7 +219,7 @@ fn succeeds_parsing_with_p_f32_followed_by_period() {
 
 #[test]
 fn succeeds_parsing_negative_integer_with_p_f32() {
-    let expected = Ok(-123.35);
+    let expected = Ok(ParserSuccess::new(-123.35, Position::new(1, 8, 7)));
 
     let actual =
         Combinator::new(p_f32())
@@ -252,7 +252,7 @@ fn fails_parsing_with_p_f32_integer_greater_than_i32_max() {
 
 #[test]
 fn succeeds_parsing_with_p_f64() {
-    let expected = Ok(340282500000000000000000000000000000000.12);
+    let expected = Ok(ParserSuccess::new(340282500000000000000000000000000000000.12, Position::new(1, 43, 42)));
 
     let actual =
         Combinator::new(p_f64())

@@ -1,6 +1,4 @@
-use super::ParserResult;
-use super::Parser;
-use super::state::ParserState;
+use super::{Parser, ParserState, ParserSuccess, ParserResult};
 
 pub struct Combinator<TResult>
 where TResult: 'static
@@ -27,7 +25,16 @@ impl<TResult> Combinator<TResult> {
                     let left = self_parser(parser_state)?;
         
                     other_parser(parser_state)
-                        .map(|right| (left, right))
+                        .map(|right| {
+                            let position = right.get_position();
+
+                            let success = 
+                                ParserSuccess::new(
+                                    (left.get_result(), right.get_result()), 
+                                    position);
+
+                            success
+                        })
                         .map_err(|err| {
                             parser_state.move_input_state_back();
                             err
@@ -62,7 +69,7 @@ impl<TResult> Combinator<TResult> {
                     let prev = self_parser(parser_state)?;
 
                     other_parser(parser_state)
-                        .map(|_|prev)
+                        .map(|next|prev.map_position(|_|next.get_position()))
                         .map_err(|err| {
                             parser_state.move_input_state_back();
                             err
@@ -103,7 +110,8 @@ impl<TResult> Combinator<TResult> {
                 move |parser_state: &mut ParserState| {
                     let self_parser = self.parser;
 
-                    self_parser(parser_state).and(Ok(return_value))
+                    self_parser(parser_state)
+                        .and(Ok(ParserSuccess::new(return_value, parser_state.get_position())))
                 }
             );
 
@@ -119,7 +127,7 @@ impl<TResult> Combinator<TResult> {
                     let self_parser = self.parser;
                     let result = self_parser(parser_state)?;
 
-                    Ok(f(result))
+                    Ok(result.map_result(f))
                 }
             );
 
