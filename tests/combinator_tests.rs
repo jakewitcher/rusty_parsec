@@ -274,6 +274,48 @@ fn succeeds_parsing_between() {
     assert_eq!(expected, actual);
 }
 
+#[test] 
+fn fails_parsing_between_at_open() {
+    let expected = Err(ParserFailure::new("{".to_string(), Some("[".to_string()), Position::new(1, 1, 0)));
+    let err_msg = "expected '{' but found '[' at line 1, column 1".to_string();
+
+    let actual =
+        Combinator::new(p_string("hello".to_string()))
+        .between(p_char('{'), p_char('}'))
+        .run("[hello}".to_string());
+
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
+}
+
+#[test] 
+fn fails_parsing_between_at_middle() {
+    let expected = Err(ParserFailure::new("hello".to_string(), Some("yello".to_string()), Position::new(1, 2, 1)));
+    let err_msg = "expected 'hello' but found 'yello' at line 1, column 2".to_string();
+
+    let actual =
+        Combinator::new(p_string("hello".to_string()))
+        .between(p_char('{'), p_char('}'))
+        .run("{yello}".to_string());
+
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
+}
+
+#[test] 
+fn fails_parsing_between_at_close() {
+    let expected = Err(ParserFailure::new("}".to_string(), Some("]".to_string()), Position::new(1, 7, 6)));
+    let err_msg = "expected '}' but found ']' at line 1, column 7".to_string();
+
+    let actual =
+        Combinator::new(p_string("hello".to_string()))
+        .between(p_char('{'), p_char('}'))
+        .run("{hello]".to_string());
+
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
+}
+
 #[test]
 fn tracks_line_and_column_number_for_error_messaging() {
     let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), Position::new(5, 3, 12)));
