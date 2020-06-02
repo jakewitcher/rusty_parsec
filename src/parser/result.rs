@@ -59,9 +59,20 @@ impl ParserFailure {
     pub fn to_err_msg(&self) -> String {
         match &self.actual {
             Some(actual) => 
-                format!("expected '{}' but found '{}' at line {}, column {}", self.expected, actual, self.position.line, self.position.column),
+                format!(
+                    "expected '{}' but found '{}' at line {}, column {}", 
+                    self.expected, 
+                    actual, 
+                    self.position.line, 
+                    self.position.column
+                ),
             None => 
-                format!("expected '{}' but found unknown error at line {}, column {}", self.expected, self.position.line, self.position.column),
+                format!(
+                    "expected '{}' but found unknown error at line {}, column {}", 
+                    self.expected, 
+                    self.position.line, 
+                    self.position.column
+                ),
         }
     }
 }

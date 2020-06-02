@@ -153,7 +153,7 @@ mod tests {
 
     #[test]
     fn gets_remaining_slice_of_input_to_be_parsed() {
-        let mut parser_state = ParserState::new(String::from("hello, world"));
+        let mut parser_state = ParserState::new("hello, world".to_string());
         
         parser_state.move_input_state_forward("hello".len());
         let remaining_input = parser_state.get_remaining_input();
@@ -164,14 +164,14 @@ mod tests {
     #[test]
     #[should_panic(expected = "will exceed the input length")]
     fn get_remaining_slice_panics_if_slice_start_exceeds_input_length() {
-        let mut parser_state = ParserState::new(String::from("hello"));
+        let mut parser_state = ParserState::new("hello".to_string());
         parser_state.current_slice_start = 7;
         parser_state.get_remaining_input();
     }
 
     #[test]
     fn move_input_state_forward_increments_current_slice_start_by_one() {
-        let mut parser_state = ParserState::new(String::from("hello"));
+        let mut parser_state = ParserState::new("hello".to_string());
         
         parser_state.move_input_state_forward('h'.len_utf8());
 
@@ -180,7 +180,7 @@ mod tests {
 
     #[test]
     fn move_input_state_forward_increments_current_slice_start_by_many() {
-        let mut parser_state = ParserState::new(String::from("hello, world"));
+        let mut parser_state = ParserState::new("hello, world".to_string());
         
         parser_state.move_input_state_forward("hello".len());
 
@@ -189,7 +189,7 @@ mod tests {
 
     #[test]
     fn move_input_state_forward_increments_current_line_start() {
-        let mut parser_state = ParserState::new(String::from("hello\nworld"));
+        let mut parser_state = ParserState::new("hello\nworld".to_string());
         
         parser_state.move_input_state_forward("hello\nwo".len());
 
@@ -200,7 +200,7 @@ mod tests {
 
     #[test]
     fn move_input_state_forward_does_not_increment_current_line_start() {
-        let mut parser_state = ParserState::new(String::from("hello\nworld"));
+        let mut parser_state = ParserState::new("hello\nworld".to_string());
         
         parser_state.move_input_state_forward("hello".len());
 
@@ -212,14 +212,14 @@ mod tests {
     #[test]
     #[should_panic(expected = "will exceed the input length")]
     fn move_input_state_forward_panics_if_increment_exceeds_input_length() {
-        let mut parser_state = ParserState::new(String::from("hello"));
+        let mut parser_state = ParserState::new("hello".to_string());
 
         parser_state.move_input_state_forward(7);
     }
 
     #[test]
     fn move_input_state_back_sets_current_slice_start_back_one() {
-        let mut parser_state = ParserState::new(String::from("hello, world"));
+        let mut parser_state = ParserState::new("hello, world".to_string());
 
         parser_state.move_input_state_forward("hello".len());
         parser_state.move_input_state_forward(", ".len());
@@ -237,7 +237,7 @@ mod tests {
 
     #[test]
     fn move_input_state_back_sets_current_line_start_back_one() {
-        let mut parser_state = ParserState::new(String::from("hello\n, \nworld"));
+        let mut parser_state = ParserState::new("hello\n, \nworld".to_string());
 
         parser_state.move_input_state_forward("hello\n,".len());
         parser_state.move_input_state_forward(" \nw".len());

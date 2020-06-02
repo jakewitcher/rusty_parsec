@@ -263,6 +263,18 @@ fn fails_parsing_then_return() {
 }
 
 #[test]
+fn succeeds_parsing_between() {
+    let expected = Ok(ParserSuccess::new("hello".to_string(), Position::new(1, 8, 7)));
+
+    let actual =
+        Combinator::new(p_string("hello".to_string()))
+            .between(p_char('{'), p_char('}'))
+            .run("{hello}".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
 fn tracks_line_and_column_number_for_error_messaging() {
     let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), Position::new(5, 3, 12)));
     let err_msg = "expected 'b' but found 'c' at line 5, column 3".to_string();
