@@ -127,7 +127,7 @@ impl<TResult> Combinator<TResult> {
                     let self_parser = self.get_parser();
 
                     p_open(parser_state)?;
-                    
+
                     match self_parser(parser_state) {
                         Ok(success) => {
                             match p_close(parser_state) {
@@ -145,6 +145,34 @@ impl<TResult> Combinator<TResult> {
                             parser_state.move_input_state_back();
                             Err(err)
                         },
+                    }
+                }
+            );
+
+        Combinator::new(next_parser)
+    }
+
+    pub fn pipe_2<UResult, VResult>(self, snd_parser: Parser<UResult>, f: Box<dyn Fn (TResult, UResult) -> VResult>) -> Combinator<VResult> 
+    where UResult: 'static, VResult: 'static
+    {
+        let next_parser =
+            Box::new(
+                move |parser_state: &mut ParserState| {
+                    let self_parser = self.parser;
+
+                    let first = self_parser(parser_state)?;
+
+                    match snd_parser(parser_state) {
+                        Ok(second) => {
+                            let position = second.get_position();
+                            let result = f(first.get_result(), second.get_result());
+
+                            Ok(ParserSuccess::new(result, position))
+                        },
+                        Err(err) => {
+                            parser_state.move_input_state_back();
+                            Err(err)
+                        }
                     }
                 }
             );
