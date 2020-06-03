@@ -317,6 +317,46 @@ fn fails_parsing_between_at_close() {
 }
 
 #[test]
+fn succeeds_parsing_pipe_2() {
+    let expected = Ok(ParserSuccess::new("hello, world".to_string(), Position::new(1, 11, 10)));
+
+    let actual =
+        Combinator::new(p_string("hello".to_string()))
+            .pipe_2(p_string("world".to_string()), Box::new(|fst, snd| format!("{}, {}", fst, snd)))
+            .run("helloworld".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test] 
+fn fails_parsing_pipe_2_at_first_parser() {
+    let expected = Err(ParserFailure::new("hello".to_string(), Some("yello".to_string()), Position::new(1, 1, 0)));
+    let err_msg = "expected 'hello' but found 'yello' at line 1, column 1".to_string();
+
+    let actual =
+        Combinator::new(p_string("hello".to_string()))
+            .pipe_2(p_string("world".to_string()), Box::new(|fst, snd| format!("{}, {}", fst, snd)))
+            .run("yelloworld".to_string());
+
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
+}
+
+#[test] 
+fn fails_parsing_pipe_2_at_second_parser() {
+    let expected = Err(ParserFailure::new("world".to_string(), Some("wooly".to_string()), Position::new(1, 6, 5)));
+    let err_msg = "expected 'world' but found 'wooly' at line 1, column 6".to_string();
+
+    let actual =
+        Combinator::new(p_string("hello".to_string()))
+            .pipe_2(p_string("world".to_string()), Box::new(|fst, snd| format!("{}, {}", fst, snd)))
+            .run("hellowooly".to_string());
+
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
+}
+
+#[test]
 fn tracks_line_and_column_number_for_error_messaging() {
     let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), Position::new(5, 3, 12)));
     let err_msg = "expected 'b' but found 'c' at line 5, column 3".to_string();
