@@ -278,3 +278,27 @@ fn succeeds_parsing_with_p_f64() {
 
     assert_eq!(expected, actual);
 }
+
+#[test]
+fn succeeds_parsing_with_satisfy() {
+    let expected = Ok(ParserSuccess::new('c', Position::new(1, 2, 1)));
+
+    let actual =
+        Combinator::new(satisfy(Box::new(|c:char|c.is_ascii_lowercase())))
+            .run("cat".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_with_satisfy() {
+    let expected = Err(ParserFailure::new("char satisfying the condition".to_string(), None, Position::new(1, 1, 0)));
+    let err_msg = "expected 'char satisfying the condition' but found unknown error at line 1, column 1".to_string();
+
+    let actual =
+        Combinator::new(satisfy(Box::new(|c:char|c.is_ascii_lowercase())))
+            .run("Cat".to_string());
+
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
+}

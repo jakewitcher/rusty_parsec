@@ -219,6 +219,34 @@ where T: Float + 'static
     )
 }
 
+pub fn satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<char> {
+    Box::new(
+        move |parser_state: &mut ParserState| {
+            let source_char = 
+                parser_state.get_remaining_input().chars().next();
+
+            match source_char {
+                Some(c) if f(c) => {
+                    parser_state.move_input_state_forward(c.len_utf8());
+
+                    let success = ParserSuccess::new(c, parser_state.get_position());
+                    
+                    Ok(success)
+                },
+                _ => {
+                    let err = ParserFailure::new(
+                        "char satisfying the condition".to_string(),
+                        None,
+                        parser_state.get_position()
+                    );
+
+                    Err(err)
+                }
+            }
+        }
+    )
+}
+
 pub fn ws() -> Parser<()> {
     Box::new(
         move |parser_state: &mut ParserState| {
