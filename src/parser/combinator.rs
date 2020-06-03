@@ -126,28 +126,25 @@ impl<TResult> Combinator<TResult> {
                 move |parser_state: &mut ParserState| {
                     let self_parser = self.get_parser();
 
-                    match p_open(parser_state) {
-                        Ok(_) => {
-                            match self_parser(parser_state) {
-                                Ok(success) => {
-                                    match p_close(parser_state) {
-                                        Ok(close) => {
-                                            Ok(success.map_position(|_|close.get_position()))
-                                        },
-                                        Err(err) => {
-                                            parser_state.move_input_state_back();
-                                            parser_state.move_input_state_back();
-                                            Err(err)
-                                        },
-                                    }
+                    p_open(parser_state)?;
+                    
+                    match self_parser(parser_state) {
+                        Ok(success) => {
+                            match p_close(parser_state) {
+                                Ok(close) => {
+                                    Ok(success.map_position(|_|close.get_position()))
                                 },
                                 Err(err) => {
+                                    parser_state.move_input_state_back();
                                     parser_state.move_input_state_back();
                                     Err(err)
                                 },
                             }
                         },
-                        Err(err) => Err(err),
+                        Err(err) => {
+                            parser_state.move_input_state_back();
+                            Err(err)
+                        },
                     }
                 }
             );
