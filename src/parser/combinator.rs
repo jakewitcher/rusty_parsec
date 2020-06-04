@@ -153,7 +153,7 @@ impl<TResult> Combinator<TResult> {
     }
 
     pub fn pipe_2<UResult, VResult>(self, snd_parser: Parser<UResult>, f: Box<dyn Fn (TResult, UResult) -> VResult>) -> Combinator<VResult> 
-    where UResult: 'static, VResult: 'static
+    where UResult: 'static
     {
         let next_parser =
             Box::new(
@@ -173,6 +173,148 @@ impl<TResult> Combinator<TResult> {
                             parser_state.move_input_state_back();
                             Err(err)
                         }
+                    }
+                }
+            );
+
+        Combinator::new(next_parser)
+    }
+
+    pub fn pipe_3<UResult, VResult, WResult>(self, snd_parser: Parser<UResult>, third_parser: Parser<VResult>, f: Box<dyn Fn (TResult, UResult, VResult) -> WResult>) -> Combinator<WResult> 
+    where UResult: 'static, VResult: 'static
+    {
+        let next_parser =
+            Box::new(
+                move |parser_state: &mut ParserState| {
+                    let self_parser = self.parser;
+
+                    let first = self_parser(parser_state)?;
+
+                    match snd_parser(parser_state) {
+                        Ok(second) => {
+                            match third_parser(parser_state) {
+                                Ok(third) => {
+                                    let position = third.get_position();
+                                    let result = f(first.get_result(), second.get_result(), third.get_result());
+
+                                    Ok(ParserSuccess::new(result, position))
+                                },
+                                Err(err) => {
+                                    parser_state.move_input_state_back();
+                                    parser_state.move_input_state_back();
+                                    Err(err)
+                                }
+                            }
+                        },
+                        Err(err) => {
+                            parser_state.move_input_state_back();
+                            Err(err)
+                        }
+                    }
+                }
+            );
+
+        Combinator::new(next_parser)
+    }
+
+    pub fn pipe_4<UResult, VResult, WResult, XResult>(self, snd_parser: Parser<UResult>, third_parser: Parser<VResult>, fourth_parser: Parser<WResult>, f: Box<dyn Fn (TResult, UResult, VResult, WResult) -> XResult>) -> Combinator<XResult> 
+    where UResult: 'static, VResult: 'static, WResult: 'static
+    {
+        let next_parser =
+            Box::new(
+                move |parser_state: &mut ParserState| {
+                    let self_parser = self.parser;
+
+                    let first = self_parser(parser_state)?;
+
+                    match snd_parser(parser_state) {
+                        Ok(second) => {
+                            match third_parser(parser_state) {
+                                Ok(third) => {
+                                    match fourth_parser(parser_state) {
+                                        Ok(fourth) => {
+                                        let position = fourth.get_position();
+                                        let result = f(first.get_result(), second.get_result(), third.get_result(), fourth.get_result());
+
+                                        Ok(ParserSuccess::new(result, position))
+                                        },
+                                        Err(err) => {
+                                            parser_state.move_input_state_back();
+                                            parser_state.move_input_state_back();
+                                            parser_state.move_input_state_back();
+                                            Err(err)
+                                        }
+                                    }
+                                },
+                                Err(err) => {
+                                    parser_state.move_input_state_back();
+                                    parser_state.move_input_state_back();
+                                    Err(err)
+                                }
+                            }
+                        },
+                        Err(err) => {
+                            parser_state.move_input_state_back();
+                            Err(err)
+                        }
+                    }
+                }
+            );
+
+        Combinator::new(next_parser)
+    }
+
+    pub fn pipe_5<UResult, VResult, WResult, XResult, YResult>(self, snd_parser: Parser<UResult>, third_parser: Parser<VResult>, fourth_parser: Parser<WResult>, fifth_parser: Parser<XResult>, f: Box<dyn Fn (TResult, UResult, VResult, WResult, XResult) -> YResult>) -> Combinator<YResult> 
+    where UResult: 'static, VResult: 'static, WResult: 'static, XResult: 'static
+    {
+        let next_parser =
+            Box::new(
+                move |parser_state: &mut ParserState| {
+                    let self_parser = self.parser;
+
+                    let first = self_parser(parser_state)?;
+
+                    match snd_parser(parser_state) {
+                        Ok(second) => {
+                            match third_parser(parser_state) {
+                                Ok(third) => {
+                                    match fourth_parser(parser_state) {
+                                        Ok(fourth) => {
+                                            match fifth_parser(parser_state) {
+                                                Ok(fifth) => {
+                                                    let position = fifth.get_position();
+                                                    let result = f(first.get_result(), second.get_result(), third.get_result(), fourth.get_result(), fifth.get_result());
+            
+                                                    Ok(ParserSuccess::new(result, position))
+                                                },
+                                                Err(err) => {
+                                                    parser_state.move_input_state_back();
+                                                    parser_state.move_input_state_back();
+                                                    parser_state.move_input_state_back();
+                                                    parser_state.move_input_state_back();
+                                                    Err(err)
+                                                },
+                                            }
+                                        },
+                                        Err(err) => {
+                                            parser_state.move_input_state_back();
+                                            parser_state.move_input_state_back();
+                                            parser_state.move_input_state_back();
+                                            Err(err)
+                                        },
+                                    }
+                                },
+                                Err(err) => {
+                                    parser_state.move_input_state_back();
+                                    parser_state.move_input_state_back();
+                                    Err(err)
+                                },
+                            }
+                        },
+                        Err(err) => {
+                            parser_state.move_input_state_back();
+                            Err(err)
+                        },
                     }
                 }
             );
