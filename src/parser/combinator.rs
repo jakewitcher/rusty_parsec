@@ -233,6 +233,40 @@ impl<TResult> Combinator<TResult> {
         Combinator::new(next_parser)
     }
 
+    pub fn tuple_2<UResult>(self, snd_parser: Parser<UResult>) -> Combinator<(TResult, UResult)> {
+        self.pipe_2(
+            snd_parser, 
+            Box::new(|fst, snd| (fst, snd))
+        )
+    }
+
+    pub fn tuple_3<UResult, VResult>(self, snd_parser: Parser<UResult>, third_parser: Parser<VResult>) -> Combinator<(TResult, UResult, VResult)> {
+        self.pipe_3(
+            snd_parser, 
+            third_parser, 
+            Box::new(|fst, snd, third| (fst, snd, third))
+        )
+    }
+
+    pub fn tuple_4<UResult, VResult, WResult>(self, snd_parser: Parser<UResult>, third_parser: Parser<VResult>, fourth_parser: Parser<WResult>) -> Combinator<(TResult, UResult, VResult, WResult)> {
+        self.pipe_4(
+            snd_parser, 
+            third_parser, 
+            fourth_parser, 
+            Box::new(|fst, snd, third, fourth| (fst, snd, third, fourth))
+        )
+    }
+
+    pub fn tuple_5<UResult, VResult, WResult, XResult>(self, snd_parser: Parser<UResult>, third_parser: Parser<VResult>, fourth_parser: Parser<WResult>, fifth_parser: Parser<XResult>) -> Combinator<(TResult, UResult, VResult, WResult, XResult)> {
+        self.pipe_5(
+            snd_parser, 
+            third_parser, 
+            fourth_parser, 
+            fifth_parser, 
+            Box::new(|fst, snd, third, fourth, fifth| (fst, snd, third, fourth, fifth))
+        )
+    }
+
     pub fn map<UResult>(self, f: Box<dyn Fn(TResult) -> UResult>) -> Combinator<UResult>
     where UResult: 'static
     {
