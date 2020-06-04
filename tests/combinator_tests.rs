@@ -357,6 +357,70 @@ fn fails_parsing_pipe_2_at_second_parser() {
 }
 
 #[test]
+fn succeeds_parsing_pipe_3() {
+    let expected = Ok(ParserSuccess::new(("Hello".to_string(), 123 , true), Position::new(1, 13, 12)));
+
+    let p_true = 
+        Combinator::new(p_string("true".to_string()))
+            .then_return(true).get_parser();
+
+    let actual =
+        Combinator::new(p_string("Hello".to_string()))
+            .pipe_3(p_u32(), p_true, Box::new(|word, number, boolean| (word, number, boolean)))
+            .run("Hello123true".to_string());
+
+        assert_eq!(expected, actual);
+}
+
+#[test] 
+fn fails_parsing_pipe_3_at_second_parser() {
+    let expected = Err(ParserFailure::new("integral value".to_string(), None, Position::new(1, 6, 5)));
+    let err_msg = "expected 'integral value' but found unknown error at line 1, column 6".to_string();
+
+    let p_true = 
+    Combinator::new(p_string("true".to_string()))
+        .then_return(true).get_parser();
+
+    let actual =
+        Combinator::new(p_string("Hello".to_string()))
+            .pipe_3(p_u32(), p_true, Box::new(|word, number, boolean| (word, number, boolean)))
+            .run("Hellotrue123".to_string());
+
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
+}
+
+#[test] 
+fn fails_parsing_pipe_3_at_third_parser() {
+    let expected = Err(ParserFailure::new("true".to_string(), Some("fals".to_string()), Position::new(1, 9, 8)));
+    let err_msg = "expected 'true' but found 'fals' at line 1, column 9".to_string();
+
+    let p_true = 
+    Combinator::new(p_string("true".to_string()))
+        .then_return(true).get_parser();
+
+    let actual =
+        Combinator::new(p_string("Hello".to_string()))
+            .pipe_3(p_u32(), p_true, Box::new(|word, number, boolean| (word, number, boolean)))
+            .run("Hello123false".to_string());
+
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
+}
+
+#[test]
+fn succeeds_parsing_pipe_5() {
+    let expected = Ok(ParserSuccess::new("Hello darkness, my old friend.".to_string(), Position::new(1, 25, 24)));
+
+    let actual =
+        Combinator::new(p_string("Hello".to_string()))
+            .pipe_5(p_string("darkness".to_string()), p_string("my".to_string()), p_string("old".to_string()), p_string("friend".to_string()), Box::new(|fst, snd, third, fourth, fifth| format!("{} {}, {} {} {}.", fst, snd, third, fourth, fifth)))
+            .run("Hellodarknessmyoldfriend".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
 fn tracks_line_and_column_number_for_error_messaging() {
     let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), Position::new(5, 3, 12)));
     let err_msg = "expected 'b' but found 'c' at line 5, column 3".to_string();

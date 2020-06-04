@@ -29,9 +29,13 @@ impl<TResult> ParserSuccess<TResult> {
         ParserSuccess::new(new_result, position)
     }
 
-    pub fn map_position(self, f: impl Fn(Position) -> Position) -> ParserSuccess<TResult> {
-        let position = f(self.get_position());
+    pub fn update_result<UResult>(self, new_result: UResult) -> ParserSuccess<UResult> {
+        let position = self.get_position();
 
+        ParserSuccess::new(new_result, position)
+    }
+
+    pub fn update_position(self, position: Position) -> ParserSuccess<TResult> {
         ParserSuccess::new(self.get_result(), position)
     }
 

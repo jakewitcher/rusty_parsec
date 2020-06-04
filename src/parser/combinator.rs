@@ -22,23 +22,14 @@ impl<TResult> Combinator<TResult> {
             Box::new(
                 move |parser_state: &mut ParserState| {
                     let self_parser = self.get_parser();
+
                     let left = self_parser(parser_state)?;
-        
-                    other_parser(parser_state)
-                        .map(|right| {
-                            let position = right.get_position();
+                    let right = other_parser(parser_state)?;
 
-                            let success = 
-                                ParserSuccess::new(
-                                    (left.get_result(), right.get_result()), 
-                                    position);
+                    let position = right.get_position();
+                    let result = (left.get_result(), right.get_result());
 
-                            success
-                        })
-                        .map_err(|err| {
-                            parser_state.move_input_state_back();
-                            err
-                        })
+                    Ok(ParserSuccess::new(result, position))
                 }
             );
 
@@ -52,7 +43,7 @@ impl<TResult> Combinator<TResult> {
                 move |parser_state: &mut ParserState| {
                     let self_parser = self.get_parser();
 
-                    self_parser(parser_state).or_else(|_|other_parser(parser_state))
+                    self_parser(parser_state).or(other_parser(parser_state))
                 }
             );
 
@@ -66,14 +57,11 @@ impl<TResult> Combinator<TResult> {
             Box::new(
                 move |parser_state: &mut ParserState| {
                     let self_parser = self.get_parser();
-                    let prev = self_parser(parser_state)?;
 
-                    other_parser(parser_state)
-                        .map(|next|prev.map_position(|_|next.get_position()))
-                        .map_err(|err| {
-                            parser_state.move_input_state_back();
-                            err
-                        })
+                    let prev = self_parser(parser_state)?;
+                    let next = other_parser(parser_state)?;
+                    
+                    Ok(prev.update_position(next.get_position()))
                 }
             );
 
@@ -89,13 +77,7 @@ impl<TResult> Combinator<TResult> {
                     let self_parser = self.get_parser();
 
                     self_parser(parser_state)
-                        .and(match other_parser(parser_state) {
-                            Ok(next) => Ok(next),
-                            Err(err) => {
-                                parser_state.move_input_state_back();
-                                Err(err)
-                            }
-                        })
+                        .and(other_parser(parser_state))
                 }
             );
 
@@ -110,8 +92,9 @@ impl<TResult> Combinator<TResult> {
                 move |parser_state: &mut ParserState| {
                     let self_parser = self.get_parser();
 
-                    self_parser(parser_state)
-                        .and(Ok(ParserSuccess::new(return_value, parser_state.get_position())))
+                    let result = self_parser(parser_state)?;
+                    
+                    Ok(ParserSuccess::new(return_value, result.get_position()))
                 }
             );
 
@@ -128,24 +111,10 @@ impl<TResult> Combinator<TResult> {
 
                     p_open(parser_state)?;
 
-                    match self_parser(parser_state) {
-                        Ok(success) => {
-                            match p_close(parser_state) {
-                                Ok(close) => {
-                                    Ok(success.map_position(|_|close.get_position()))
-                                },
-                                Err(err) => {
-                                    parser_state.move_input_state_back();
-                                    parser_state.move_input_state_back();
-                                    Err(err)
-                                },
-                            }
-                        },
-                        Err(err) => {
-                            parser_state.move_input_state_back();
-                            Err(err)
-                        },
-                    }
+                    let result = self_parser(parser_state)?;
+                    let close = p_close(parser_state)?;
+
+                    Ok(result.update_position(close.get_position()))
                 }
             );
 
@@ -161,19 +130,16 @@ impl<TResult> Combinator<TResult> {
                     let self_parser = self.parser;
 
                     let first = self_parser(parser_state)?;
+                    let second = snd_parser(parser_state)?;
 
-                    match snd_parser(parser_state) {
-                        Ok(second) => {
-                            let position = second.get_position();
-                            let result = f(first.get_result(), second.get_result());
+                    let position = second.get_position();
+                    let result = 
+                        f(
+                            first.get_result(), 
+                            second.get_result()
+                        );
 
-                            Ok(ParserSuccess::new(result, position))
-                        },
-                        Err(err) => {
-                            parser_state.move_input_state_back();
-                            Err(err)
-                        }
-                    }
+                    Ok(ParserSuccess::new(result, position))
                 }
             );
 
@@ -189,28 +155,18 @@ impl<TResult> Combinator<TResult> {
                     let self_parser = self.parser;
 
                     let first = self_parser(parser_state)?;
+                    let second = snd_parser(parser_state)?;
+                    let third = third_parser(parser_state)?;
 
-                    match snd_parser(parser_state) {
-                        Ok(second) => {
-                            match third_parser(parser_state) {
-                                Ok(third) => {
-                                    let position = third.get_position();
-                                    let result = f(first.get_result(), second.get_result(), third.get_result());
+                    let position = third.get_position();
+                    let result = 
+                        f(
+                            first.get_result(), 
+                            second.get_result(), 
+                            third.get_result()
+                        );
 
-                                    Ok(ParserSuccess::new(result, position))
-                                },
-                                Err(err) => {
-                                    parser_state.move_input_state_back();
-                                    parser_state.move_input_state_back();
-                                    Err(err)
-                                }
-                            }
-                        },
-                        Err(err) => {
-                            parser_state.move_input_state_back();
-                            Err(err)
-                        }
-                    }
+                    Ok(ParserSuccess::new(result, position))
                 }
             );
 
@@ -226,38 +182,20 @@ impl<TResult> Combinator<TResult> {
                     let self_parser = self.parser;
 
                     let first = self_parser(parser_state)?;
+                    let second = snd_parser(parser_state)?;
+                    let third = third_parser(parser_state)?;
+                    let fourth = fourth_parser(parser_state)?;
 
-                    match snd_parser(parser_state) {
-                        Ok(second) => {
-                            match third_parser(parser_state) {
-                                Ok(third) => {
-                                    match fourth_parser(parser_state) {
-                                        Ok(fourth) => {
-                                        let position = fourth.get_position();
-                                        let result = f(first.get_result(), second.get_result(), third.get_result(), fourth.get_result());
+                    let position = fourth.get_position();
+                    let result = 
+                        f(
+                            first.get_result(), 
+                            second.get_result(), 
+                            third.get_result(), 
+                            fourth.get_result()
+                        );
 
-                                        Ok(ParserSuccess::new(result, position))
-                                        },
-                                        Err(err) => {
-                                            parser_state.move_input_state_back();
-                                            parser_state.move_input_state_back();
-                                            parser_state.move_input_state_back();
-                                            Err(err)
-                                        }
-                                    }
-                                },
-                                Err(err) => {
-                                    parser_state.move_input_state_back();
-                                    parser_state.move_input_state_back();
-                                    Err(err)
-                                }
-                            }
-                        },
-                        Err(err) => {
-                            parser_state.move_input_state_back();
-                            Err(err)
-                        }
-                    }
+                    Ok(ParserSuccess::new(result, position))
                 }
             );
 
@@ -273,49 +211,22 @@ impl<TResult> Combinator<TResult> {
                     let self_parser = self.parser;
 
                     let first = self_parser(parser_state)?;
+                    let second = snd_parser(parser_state)?;
+                    let third = third_parser(parser_state)?;
+                    let fourth = fourth_parser(parser_state)?;
+                    let fifth = fifth_parser(parser_state)?;
 
-                    match snd_parser(parser_state) {
-                        Ok(second) => {
-                            match third_parser(parser_state) {
-                                Ok(third) => {
-                                    match fourth_parser(parser_state) {
-                                        Ok(fourth) => {
-                                            match fifth_parser(parser_state) {
-                                                Ok(fifth) => {
-                                                    let position = fifth.get_position();
-                                                    let result = f(first.get_result(), second.get_result(), third.get_result(), fourth.get_result(), fifth.get_result());
-            
-                                                    Ok(ParserSuccess::new(result, position))
-                                                },
-                                                Err(err) => {
-                                                    parser_state.move_input_state_back();
-                                                    parser_state.move_input_state_back();
-                                                    parser_state.move_input_state_back();
-                                                    parser_state.move_input_state_back();
-                                                    Err(err)
-                                                },
-                                            }
-                                        },
-                                        Err(err) => {
-                                            parser_state.move_input_state_back();
-                                            parser_state.move_input_state_back();
-                                            parser_state.move_input_state_back();
-                                            Err(err)
-                                        },
-                                    }
-                                },
-                                Err(err) => {
-                                    parser_state.move_input_state_back();
-                                    parser_state.move_input_state_back();
-                                    Err(err)
-                                },
-                            }
-                        },
-                        Err(err) => {
-                            parser_state.move_input_state_back();
-                            Err(err)
-                        },
-                    }
+                    let position = fifth.get_position();
+                    let result = 
+                        f(
+                            first.get_result(), 
+                            second.get_result(), 
+                            third.get_result(), 
+                            fourth.get_result(), 
+                            fifth.get_result()
+                        );
+
+                    Ok(ParserSuccess::new(result, position))
                 }
             );
 
