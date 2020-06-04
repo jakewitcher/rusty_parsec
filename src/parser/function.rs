@@ -108,10 +108,6 @@ where T: PrimInt + 'static
 {
     Box::new(
         move |parser_state: &mut ParserState| {
-            let chars: Vec<char> = 
-                parser_state.get_remaining_input()
-                    .chars().collect();
-            
             let mut int_char_count = 0;
 
             let err = ParserFailure::new(
@@ -120,7 +116,7 @@ where T: PrimInt + 'static
                 parser_state.get_position()
             );
 
-            for c in chars  {
+            for c in parser_state.get_remaining_input().chars() {
                 if c.is_numeric() || c == '-' && int_char_count == 0 {
                     int_char_count += c.len_utf8();
                 } else {
@@ -167,10 +163,6 @@ where T: Float + 'static
 {
     Box::new(
         move |parser_state: &mut ParserState| {
-            let chars: Vec<char> = 
-                parser_state.get_remaining_input()
-                    .chars().collect();
-            
             let mut int_char_count = 0;
 
             let err = ParserFailure::new(
@@ -181,7 +173,7 @@ where T: Float + 'static
 
             let mut has_decimal_point = false;
 
-            for c in chars  {
+            for c in parser_state.get_remaining_input().chars() {
                 if c.is_numeric() || c == '-' && int_char_count == 0 {
                     int_char_count += c.len_utf8();
                 } else if c == '.' && has_decimal_point == false {
@@ -222,10 +214,7 @@ where T: Float + 'static
 pub fn satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<char> {
     Box::new(
         move |parser_state: &mut ParserState| {
-            let source_char = 
-                parser_state.get_remaining_input().chars().next();
-
-            match source_char {
+            match parser_state.get_remaining_input().chars().next() {
                 Some(c) if f(c) => {
                     parser_state.move_input_state_forward(c.len_utf8());
 
@@ -250,13 +239,9 @@ pub fn satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<char> {
 pub fn ws() -> Parser<()> {
     Box::new(
         move |parser_state: &mut ParserState| {
-            let chars: Vec<char> = 
-                parser_state.get_remaining_input()
-                    .chars().collect();
-            
             let mut ws_char_count = 0;
 
-            for c in chars  {
+            for c in parser_state.get_remaining_input().chars()  {
                 if c.is_ascii_whitespace() {
                     ws_char_count += c.len_utf8();
                 } else {
