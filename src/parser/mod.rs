@@ -7,4 +7,4 @@ pub use combinator::Combinator;
 pub use state::ParserState;
 pub use result::{Position, ParserSuccess, ParserFailure, ParserResult};
 
-pub type Parser<TResult> = Box<dyn FnOnce(&mut ParserState) -> ParserResult<TResult>>;
+pub type Parser<T> = Box<dyn FnOnce(&mut ParserState) -> ParserResult<T>>;

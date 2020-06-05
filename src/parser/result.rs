@@ -12,34 +12,34 @@ impl Position {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct ParserSuccess<TResult> {
-    result: TResult,
+pub struct ParserSuccess<T> {
+    result: T,
     position: Position,
 }
 
-impl<TResult> ParserSuccess<TResult> {
-    pub fn new(result: TResult, position: Position) -> ParserSuccess<TResult> {
+impl<T> ParserSuccess<T> {
+    pub fn new(result: T, position: Position) -> ParserSuccess<T> {
         ParserSuccess { result, position }
     }
 
-    pub fn map_result<UResult>(self, f: impl Fn(TResult) -> UResult) -> ParserSuccess<UResult> {
+    pub fn map_result<U>(self, f: impl Fn(T) -> U) -> ParserSuccess<U> {
         let position = self.get_position();
         let new_result = f(self.get_result());
 
         ParserSuccess::new(new_result, position)
     }
 
-    pub fn update_result<UResult>(self, new_result: UResult) -> ParserSuccess<UResult> {
+    pub fn update_result<U>(self, new_result: U) -> ParserSuccess<U> {
         let position = self.get_position();
 
         ParserSuccess::new(new_result, position)
     }
 
-    pub fn update_position(self, position: Position) -> ParserSuccess<TResult> {
+    pub fn update_position(self, position: Position) -> ParserSuccess<T> {
         ParserSuccess::new(self.get_result(), position)
     }
 
-    pub fn get_result(self) -> TResult {
+    pub fn get_result(self) -> T {
         self.result
     }
 
@@ -81,4 +81,4 @@ impl ParserFailure {
     }
 }
 
-pub type ParserResult<TResult> = Result<ParserSuccess<TResult>, ParserFailure>;
+pub type ParserResult<T> = Result<ParserSuccess<T>, ParserFailure>;
