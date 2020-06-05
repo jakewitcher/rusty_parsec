@@ -7,34 +7,45 @@ use num_traits::{Float, PrimInt};
 pub fn p_char(target: char) -> Parser<char> {
     Box::new(
         move |state: &mut ParserState| {
-            let maybe_char = state.get_remaining_input().chars().next();
-
-            match maybe_char {
+            match state.get_remaining_input().chars().next() {
                 Some(c) if c == target => {
                     state.move_input_state_forward(target.len_utf8());
-
-                    let success = ParserSuccess::new(c, state.get_position());
-                    
-                    Ok(success)
+                    Ok(ParserSuccess::new(c, state.get_position()))
                 },
                 Some(c) => {
-                    let failure = ParserFailure::new(
+                    Err(ParserFailure::new(
                         target.to_string(),
                         Some(c.to_string()),
                         state.get_position()
-                    );
-
-                    Err(failure)
+                    ))
                 },
-                _ => {
-                    let failure = ParserFailure::new(
+                None => {
+                    Err(ParserFailure::new(
                         target.to_string(),
                         None,
                         state.get_position()
-                    );
+                    ))
+                },
+            }
+        }
+    )
+}
 
-                    Err(failure)
-                }
+pub fn satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<char> {
+    Box::new(
+        move |state: &mut ParserState| {
+            match state.get_remaining_input().chars().next() {
+                Some(c) if f(c) => {
+                    state.move_input_state_forward(c.len_utf8());
+                    Ok(ParserSuccess::new(c, state.get_position()))
+                },
+                _ => {
+                    Err(ParserFailure::new(
+                        "char satisfying the condition".to_string(),
+                        None,
+                        state.get_position()
+                    ))
+                },
             }
         }
     )
@@ -43,34 +54,25 @@ pub fn p_char(target: char) -> Parser<char> {
 pub fn p_string(target: String) -> Parser<String> {
     Box::new(
         move |state: &mut ParserState| {
-            let maybe_str = state.get_slice(target.len());
-
-            match maybe_str {
+            match state.get_slice(target.len()) {
                 Some(s) if s == target => {
                     state.move_input_state_forward(target.len());
-
-                    let success = ParserSuccess::new(s, state.get_position());
-
-                    Ok(success)
+                    Ok(ParserSuccess::new(s, state.get_position()))
                 },
                 Some(s) => {
-                    let failure = ParserFailure::new(
+                    Err(ParserFailure::new(
                         target,
                         Some(s),
                         state.get_position()
-                    );
-    
-                    Err(failure)
+                    ))
                 },
                 None => {
-                    let failure = ParserFailure::new(
+                    Err(ParserFailure::new(
                         target,
                         None,
                         state.get_position()
-                    );
-    
-                    Err(failure)
-                }
+                    ))
+                },
             }
         }
     )
@@ -107,12 +109,6 @@ where T: PrimInt + 'static
         move |state: &mut ParserState| {
             let mut count = 0;
 
-            let failure = ParserFailure::new(
-                "integral value".to_string(),
-                None,
-                state.get_position()
-            );
-
             for c in state.get_remaining_input().chars() {
                 if c.is_numeric() || c == '-' && count == 0 {
                     count += c.len_utf8();
@@ -121,27 +117,17 @@ where T: PrimInt + 'static
                 }
             }
 
-            if count == 0 {
-                Err(failure)
-            } else {
-                let maybe_str = state.get_slice(count);
-
-                match maybe_str {
-                    Some(s) => {
-                        let maybe_int = parse_num(s);
-                        match maybe_int {
-                            Ok(int) => {
-                                state.move_input_state_forward(count);
-
-                                let success = ParserSuccess::new(int, state.get_position());
-
-                                Ok(success)
-                            },
-                            _ => Err(failure)
-                        }
-                    },
-                    _ => Err(failure)
-                }
+            match state.get_slice(count).map(|s| parse_num(s)) {
+                Some(Ok(int)) => {
+                    state.move_input_state_forward(count);
+                    Ok(ParserSuccess::new(int, state.get_position()))
+                },
+                _ =>
+                    Err(ParserFailure::new(
+                        "integral value".to_string(),
+                        None,
+                        state.get_position())
+                    ),
             }
         }
     )
@@ -161,13 +147,6 @@ where T: Float + 'static
     Box::new(
         move |state: &mut ParserState| {
             let mut count = 0;
-
-            let failure = ParserFailure::new(
-                "floating point value".to_string(),
-                None,
-                state.get_position()
-            );
-
             let mut has_decimal_point = false;
 
             for c in state.get_remaining_input().chars() {
@@ -181,53 +160,23 @@ where T: Float + 'static
                 }
             }
 
-            if count == 0 {
-                Err(failure)
-            } else {
-                let maybe_str = state.get_slice(count);
-
-                match maybe_str {
-                    Some(s) => {
-                        let maybe_float = parse_num(s);
-                        match maybe_float {
-                            Ok(float) if float.is_infinite() => Err(failure),
-                            Ok(float) => {
-                                state.move_input_state_forward(count);
-
-                                let success = ParserSuccess::new(float, state.get_position());
-                                
-                                Ok(success)
-                            },
-                            _ => Err(failure)
-                        }
-                    },
-                    _ => Err(failure)
-                }
-            }
-        }
-    )
-}
-
-pub fn satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<char> {
-    Box::new(
-        move |state: &mut ParserState| {
-            match state.get_remaining_input().chars().next() {
-                Some(c) if f(c) => {
-                    state.move_input_state_forward(c.len_utf8());
-
-                    let success = ParserSuccess::new(c, state.get_position());
-                    
-                    Ok(success)
-                },
-                _ => {
-                    let failure = ParserFailure::new(
-                        "char satisfying the condition".to_string(),
+            match state.get_slice(count).map(|s| parse_num(s)) {
+                Some(Ok(float)) if float.is_infinite() => 
+                    Err(ParserFailure::new(
+                        "floating point value".to_string(),
                         None,
-                        state.get_position()
-                    );
-
-                    Err(failure)
-                }
+                        state.get_position())
+                    ),
+                Some(Ok(float)) => {
+                    state.move_input_state_forward(count);
+                    Ok(ParserSuccess::new(float, state.get_position()))
+                },
+                _ =>
+                    Err(ParserFailure::new(
+                        "floating point value".to_string(),
+                        None,
+                        state.get_position())
+                    ),
             }
         }
     )
@@ -247,8 +196,7 @@ pub fn ws() -> Parser<()> {
             }
 
             state.move_input_state_forward(count);
-            let success = ParserSuccess::new((), state.get_position());
-            Ok(success)
+            Ok(ParserSuccess::new((), state.get_position()))
         }
     )
 }
