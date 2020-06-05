@@ -161,13 +161,7 @@ where T: Float + 'static
             }
 
             match state.get_slice(count).map(|s| parse_num(s)) {
-                Some(Ok(float)) if float.is_infinite() => 
-                    Err(ParserFailure::new(
-                        "floating point value".to_string(),
-                        None,
-                        state.get_position())
-                    ),
-                Some(Ok(float)) => {
+                Some(Ok(float)) if float.is_finite() => {
                     state.move_input_state_forward(count);
                     Ok(ParserSuccess::new(float, state.get_position()))
                 },
