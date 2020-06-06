@@ -5,12 +5,22 @@ use super::result::{ParserSuccess, ParserFailure};
 use num_traits::{Float, PrimInt};
 
 pub fn p_char(target: char) -> Parser<char> {
+    char_return(target, target)
+}
+
+pub fn skip_char(target: char) -> Parser<()> {
+    char_return(target, ())
+}
+
+pub fn char_return<T>(target: char, return_value: T) -> Parser<T> 
+where T: 'static
+{
     Box::new(
         move |state: &mut ParserState| {
             match state.get_remaining_input().chars().next() {
                 Some(c) if c == target => {
                     state.move_input_state_forward(target.len_utf8());
-                    Ok(ParserSuccess::new(c, state.get_position()))
+                    Ok(ParserSuccess::new(return_value, state.get_position()))
                 },
                 Some(c) => {
                     Err(ParserFailure::new(
@@ -52,12 +62,22 @@ pub fn satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<char> {
 }
 
 pub fn p_string(target: String) -> Parser<String> {
+    string_return(target.clone(), target)
+}
+
+pub fn skip_string(target: String) -> Parser<()> {
+    string_return(target, ())
+}
+
+pub fn string_return<T>(target: String, return_value: T) -> Parser<T> 
+where T: 'static
+{
     Box::new(
         move |state: &mut ParserState| {
             match state.get_slice(target.len()) {
                 Some(s) if s == target => {
                     state.move_input_state_forward(target.len());
-                    Ok(ParserSuccess::new(s, state.get_position()))
+                    Ok(ParserSuccess::new(return_value, state.get_position()))
                 },
                 Some(s) => {
                     Err(ParserFailure::new(
