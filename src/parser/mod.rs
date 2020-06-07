@@ -1,6 +1,7 @@
 pub mod combinator;
 pub mod result;
-pub mod function;
+pub mod parsers;
+pub mod combinators;
 pub mod state;
 
 pub use combinator::Combinator;
