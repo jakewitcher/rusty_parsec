@@ -29,13 +29,13 @@ impl<T> ParserSuccess<T> {
         ParserSuccess::new(new_result, position)
     }
 
-    pub fn update_result<U>(self, new_result: U) -> ParserSuccess<U> {
+    pub fn with_result<U>(self, new_result: U) -> ParserSuccess<U> {
         let position = self.get_position();
 
         ParserSuccess::new(new_result, position)
     }
 
-    pub fn update_position(self, position: Position) -> ParserSuccess<T> {
+    pub fn with_position(self, position: Position) -> ParserSuccess<T> {
         ParserSuccess::new(self.get_result(), position)
     }
 
