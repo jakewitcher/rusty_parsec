@@ -61,6 +61,24 @@ pub fn satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<char> {
     )
 }
 
+pub fn many_satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<String> {
+    Box::new(
+        move |state: &mut ParserState| {
+            let mut count = 0;
+            for c in state.get_remaining_input().chars() {
+                if f(c) {
+                    count += c.len_utf8();
+                } else {
+                    break;
+                }
+            }
+            let result = state.get_slice(count).unwrap_or(String::new());
+            state.move_input_state_forward(count);
+            Ok(ParserSuccess::new(result, state.get_position()))
+        }
+    )
+}
+
 pub fn p_string(target: String) -> Parser<String> {
     string_return(target.clone(), target)
 }

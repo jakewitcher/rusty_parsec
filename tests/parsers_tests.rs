@@ -302,3 +302,43 @@ fn fails_parsing_with_satisfy() {
     assert_eq!(expected, actual);
     assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
+
+#[test]
+fn succeeds_parsing_with_many_satisfy() {
+    let expected = Ok(ParserSuccess::new("aaa".to_string(), Position::new(1, 4, 3)));
+
+    let actual =
+        Combinator::new(many_satisfy(Box::new(|c:char|c == 'a')))
+            .run("aaabbb".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn succeeds_parsing_with_many_satisfy_returns_empty_string() {
+    let expected = Ok(ParserSuccess::new("".to_string(), Position::new(1, 1, 0)));
+
+    let actual =
+        Combinator::new(many_satisfy(Box::new(|c:char|c == 'a')))
+            .run("bbbaaa".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn succeeds_parsing_words_with_many_satisfy_returns_empty_string() {
+    let expected = Ok(ParserSuccess::new("hello".to_string(), Position::new(1, 6, 5)));
+    let actual = p_words().run("hello, world".to_string());
+
+    assert_eq!(expected, actual);
+
+    let expected = Ok(ParserSuccess::new("goodbye".to_string(), Position::new(1, 8, 7)));
+    let actual = p_words().run("goodbye, world".to_string());
+    assert_eq!(expected, actual);
+}
+
+fn p_words() -> Combinator<String> {
+    Combinator::new(
+        many_satisfy(Box::new(|c:char|c.is_ascii_lowercase()))
+    )
+}
