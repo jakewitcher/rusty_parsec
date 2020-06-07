@@ -1,5 +1,46 @@
 use rusty_parsec::*;
 
+fn p_true() -> Parser<bool> {
+    Combinator::new(p_string("true".to_string()))
+        .then_return(true).get_parser()
+}
+
+fn p_hello() -> Parser<String> {
+    p_string("hello".to_string())
+}
+
+fn p_abc_123() -> Parser<(String, u32)> {
+    let p_abc = p_string("abc".to_string());
+    tuple_2(p_abc, p_u32()).get_parser()
+}
+
+#[test]
+fn succeeds_parsing_many() {
+    let expected = Ok(ParserSuccess::new(vec![ "hello".to_string(), "hello".to_string(), "hello".to_string()], Position::new(1, 16, 15)));
+
+    let actual = many(p_hello).run("hellohellohello".to_string());
+
+    assert_eq!(expected, actual)
+}
+
+#[test]
+fn succeeds_parsing_many_returns_empty_vec() {
+    let expected = Ok(ParserSuccess::new(Vec::new(), Position::new(1, 1, 0)));
+
+    let actual = many(p_hello).run("worldworldworld".to_string());
+
+    assert_eq!(expected, actual)
+}
+
+#[test]
+fn succeeds_parsing_many_with_compound_parser() {
+    let expected = Ok(ParserSuccess::new(vec![("abc".to_string(), 123), ("abc".to_string(), 456), ("abc".to_string(), 789)], Position::new(1, 19, 18)));
+
+    let actual = many(p_abc_123).run("abc123abc456abc789".to_string());
+
+    assert_eq!(expected, actual);
+}
+
 #[test]
 fn succeeds_parsing_tuple_2() {
     let expected = Ok(ParserSuccess::new((123, "hello".to_string()), Position::new(1, 9, 8)));
@@ -7,7 +48,7 @@ fn succeeds_parsing_tuple_2() {
     let actual =
         tuple_2(
             p_u32(), 
-            p_string("hello".to_string())
+            p_hello()
         ).run("123hello".to_string());
 
     assert_eq!(expected, actual);
@@ -21,7 +62,7 @@ fn fails_parsing_pipe_2_at_first_parser() {
     let actual =
         tuple_2(
             p_u32(), 
-            p_string("hello".to_string())
+            p_hello()
         ).run("hello123".to_string());
 
     assert_eq!(expected, actual);
@@ -36,7 +77,7 @@ fn fails_parsing_tuple_2_at_second_parser() {
     let actual =
         tuple_2(
             p_u32(), 
-            p_string("hello".to_string())
+            p_hello()
         ).run("123world".to_string());
 
     assert_eq!(expected, actual);
@@ -49,7 +90,7 @@ fn succeeds_parsing_tuple_3() {
 
     let actual =
         tuple_3(
-            p_string("hello".to_string()), 
+            p_hello(), 
             p_u32(), 
             p_true()
         ).run("hello123true".to_string());
@@ -64,7 +105,7 @@ fn fails_parsing_tuple_3_at_first_parser() {
 
     let actual =
         tuple_3(
-            p_string("hello".to_string()), 
+            p_hello(), 
             p_u32(), 
             p_true()
         ).run("world123true".to_string());
@@ -80,7 +121,7 @@ fn fails_parsing_tuple_3_at_second_parser() {
 
     let actual =
         tuple_3(
-            p_string("hello".to_string()), 
+            p_hello(), 
             p_u32(), 
             p_true()
         ).run("helloabctrue".to_string());
@@ -96,7 +137,7 @@ fn fails_parsing_tuple_3_at_third_parser() {
 
     let actual =
         tuple_3(
-            p_string("hello".to_string()), 
+            p_hello(), 
             p_u32(), 
             p_true()
         ).run("hello123false".to_string());
@@ -111,7 +152,7 @@ fn succeeds_parsing_tuple_4() {
 
     let actual =
         tuple_4(
-            p_string("hello".to_string()), 
+            p_hello(), 
             p_u32(), 
             p_true(), 
             p_f32()
@@ -127,7 +168,7 @@ fn fails_parsing_tuple_4_at_first_parser() {
 
     let actual =
         tuple_4(
-            p_string("hello".to_string()), 
+            p_hello(), 
             p_u32(), 
             p_true(), 
             p_f32()
@@ -144,7 +185,7 @@ fn fails_parsing_tuple_4_at_second_parser() {
 
     let actual =
         tuple_4(
-            p_string("hello".to_string()), 
+            p_hello(), 
             p_u32(), 
             p_true(), 
             p_f32()
@@ -161,7 +202,7 @@ fn fails_parsing_tuple_4_at_third_parser() {
 
     let actual =
         tuple_4(
-            p_string("hello".to_string()), 
+            p_hello(), 
             p_u32(), 
             p_true(), 
             p_f32()
@@ -178,7 +219,7 @@ fn fails_parsing_tuple_4_at_fourth_parser() {
 
     let actual =
         tuple_4(
-            p_string("hello".to_string()), 
+            p_hello(), 
             p_u32(), 
             p_true(), 
             p_f32()
@@ -194,7 +235,7 @@ fn succeeds_parsing_tuple_5() {
 
     let actual =
         tuple_5(
-            p_string("hello".to_string()), 
+            p_hello(), 
             p_u32(), 
             p_true(), 
             p_f32(), 
@@ -211,7 +252,7 @@ fn fails_parsing_tuple_5_at_first_parser() {
 
     let actual =
         tuple_5(
-            p_string("hello".to_string()), 
+            p_hello(), 
             p_u32(), 
             p_true(), 
             p_f32(), 
@@ -229,7 +270,7 @@ fn fails_parsing_tuple_5_at_second_parser() {
 
     let actual =
         tuple_5(
-            p_string("hello".to_string()), 
+            p_hello(), 
             p_u32(), 
             p_true(), 
             p_f32(), 
@@ -247,7 +288,7 @@ fn fails_parsing_tuple_5_at_third_parser() {
 
     let actual =
         tuple_5(
-            p_string("hello".to_string()), 
+            p_hello(), 
             p_u32(), p_true(), 
             p_f32(), 
             satisfy(Box::new(|c| c == 'a'))
@@ -264,7 +305,7 @@ fn fails_parsing_tuple_5_at_fourth_parser() {
 
     let actual =
         tuple_5(
-            p_string("hello".to_string()), 
+            p_hello(), 
             p_u32(), 
             p_true(), 
             p_f32(), 
@@ -282,7 +323,7 @@ fn fails_parsing_tuple_5_at_fifth_parser() {
     
     let actual =
         tuple_5(
-            p_string("hello".to_string()), 
+            p_hello(), 
             p_u32(), 
             p_true(), 
             p_f32(), 
@@ -291,9 +332,4 @@ fn fails_parsing_tuple_5_at_fifth_parser() {
 
     assert_eq!(expected, actual);
     assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
-}
-
-fn p_true() -> Parser<bool> {
-    Combinator::new(p_string("true".to_string()))
-        .then_return(true).get_parser()
 }

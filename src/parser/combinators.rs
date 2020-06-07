@@ -1,5 +1,37 @@
 use super::{Combinator, Parser, ParserState, ParserSuccess};
 
+pub fn many<T>(p_factory: fn() -> Parser<T>) -> Combinator<Vec<T>> {
+    let parser =
+        Box::new(
+            move |state: &mut ParserState| {
+                let mut results: Vec<T> = Vec::new();
+                let mut position = state.get_position();
+
+                let mut parser_succeeds = true;
+                
+
+                while parser_succeeds {
+                    let p = p_factory();
+                    let result = p(state);
+
+                    match result {
+                        Ok(success) => {
+                            position = success.get_position();
+                            results.push(success.get_result());
+                        },
+                        Err(_) => {
+                            parser_succeeds = false;
+                        }
+                    }
+                }
+
+                Ok(ParserSuccess::new(results, position))
+            }
+        );
+
+    Combinator::new(parser)
+}
+
 pub fn pipe_2<T, U, V>(p1: Parser<T>, p2: Parser<U>, f: Box<dyn Fn (T, U) -> V>) -> Combinator<V> 
 where T: 'static, U: 'static
 {
