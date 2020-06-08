@@ -1,4 +1,4 @@
-use super::{Combinator, Parser, ParserState, ParserSuccess};
+use super::{Combinator, Parser, ParserState, ParserSuccess, ParserFailure};
 
 pub fn many<T>(p_factory: fn() -> Parser<T>) -> Combinator<Vec<T>> {
     let parser =
@@ -26,6 +26,32 @@ pub fn many<T>(p_factory: fn() -> Parser<T>) -> Combinator<Vec<T>> {
                 }
 
                 Ok(ParserSuccess::new(results, position))
+            }
+        );
+
+    Combinator::new(parser)
+}
+
+pub fn choice<T>(parsers:Vec<Parser<T>>) -> Combinator<T> {
+    let parser =
+        Box::new(
+            move |state: &mut ParserState| {
+                for p in parsers.into_iter() {
+                    match p(state) {
+                        Ok(success) => {
+                            return Ok(success)
+                        },
+                        _ => {
+                            continue;
+                        }
+                    } 
+                }
+
+                Err(ParserFailure::new(
+                    "value satisfying choice".to_string(),
+                    None,
+                    state.get_position()
+                ))
             }
         );
 
