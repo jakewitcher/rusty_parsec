@@ -11,6 +11,10 @@ enum Json {
     JObject(HashMap<String, Json>),
 }
 
+fn p_json() -> Combinator<Json> {
+    Combinator::new(p_json_value())
+}
+
 fn p_json_null() -> Parser<Json> {
     Combinator::new(p_string("null".to_string()))
         .then_return(Json::JNull)
@@ -103,4 +107,19 @@ fn p_key() -> Parser<String> {
     Combinator::new(many_satisfy(Box::new(|c: char| c != '\"')))
         .between(p_char('"'), p_char('"'))
         .get_parser()
+}
+
+#[test]
+fn suceeds_parsing_simple_json_object() {
+    let mut key_value_map = HashMap::new();
+
+    key_value_map.insert("account active".to_string(), Json::JBool(true));
+    key_value_map.insert("name".to_string(), Json::JString("Bob".to_string()));
+    key_value_map.insert("age".to_string(), Json::JNumber(27.0));
+
+    let expected = Ok(ParserSuccess::new(Json::JObject(key_value_map), Position::new(1, 50, 49)));
+
+    let actual = p_json().run("{\"name\":\"Bob\", \"age\": 27, \"account active\": true}".to_string());
+
+    assert_eq!(expected, actual);
 }
