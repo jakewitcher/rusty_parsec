@@ -1,6 +1,6 @@
 use super::{Combinator, Parser, ParserState, ParserSuccess, ParserFailure};
 
-pub fn many<T>(p_factory: fn() -> Parser<T>) -> Combinator<Vec<T>> {
+pub fn many<T>(parser: fn() -> Parser<T>) -> Combinator<Vec<T>> {
     let parser =
         Box::new(
             move |state: &mut ParserState| {
@@ -11,10 +11,9 @@ pub fn many<T>(p_factory: fn() -> Parser<T>) -> Combinator<Vec<T>> {
                 
 
                 while parser_succeeds {
-                    let p = p_factory();
-                    let result = p(state);
+                    let p = parser();
 
-                    match result {
+                    match p(state) {
                         Ok(success) => {
                             position = success.get_position();
                             results.push(success.get_result());
@@ -29,6 +28,43 @@ pub fn many<T>(p_factory: fn() -> Parser<T>) -> Combinator<Vec<T>> {
             }
         );
 
+    Combinator::new(parser)
+}
+
+pub fn sep_by<T, U>(parser: fn() -> Parser<T>, separator: fn() -> Parser<U>) -> Combinator<Vec<T>> 
+where U: 'static
+{
+    let parser =
+        Box::new(
+            move |state: &mut ParserState| {
+                let mut results: Vec<T> = Vec::new();
+                let mut position = state.get_position();
+
+                let mut parser_succeeds = true;
+
+                while parser_succeeds {
+                    let p = parser();
+                    let sep = separator();
+
+                    match p(state) {
+                        Ok(success) => {
+                            position = success.get_position();
+                            results.push(success.get_result());
+
+                            if sep(state).is_err() {
+                                parser_succeeds = false;
+                            }
+                        },
+                        Err(_) => {
+                            parser_succeeds = false;
+                        }
+                    }
+                }
+
+                Ok(ParserSuccess::new(results, position))
+            }
+        );
+    
     Combinator::new(parser)
 }
 

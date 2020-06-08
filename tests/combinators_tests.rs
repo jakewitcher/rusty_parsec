@@ -72,6 +72,32 @@ fn fails_parsing_with_choice() {
 }
 
 #[test]
+fn succeeds_parsing_with_sep_by() {
+    let expected = Ok(ParserSuccess::new(vec![1, 2, 3], Position::new(1, 6, 5)));
+
+    let actual =
+        sep_by(
+            || p_u32(),
+            || p_char(';')
+        ).run("1;2;3".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn succeeds_parsing_with_sep_by_returns_empty_vec() {
+    let expected = Ok(ParserSuccess::new(Vec::new(), Position::new(1, 1, 0)));
+
+    let actual =
+        sep_by(
+            || p_u32(),
+            || p_char(';')
+        ).run("a;b;c".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
 fn succeeds_parsing_with_tuple_2() {
     let expected = Ok(ParserSuccess::new((123, "hello".to_string()), Position::new(1, 9, 8)));
 
