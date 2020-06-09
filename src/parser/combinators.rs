@@ -31,6 +31,45 @@ pub fn many<T>(parser: fn() -> Parser<T>) -> Combinator<Vec<T>> {
     Combinator::new(parser)
 }
 
+pub fn many_1<T>(parser: fn() -> Parser<T>) -> Combinator<Vec<T>> {
+    let parser =
+        Box::new(
+            move |state: &mut ParserState| {
+                let mut results: Vec<T> = Vec::new();
+                let mut position = state.get_position();
+
+                let mut parser_succeeds = true;
+                
+
+                while parser_succeeds {
+                    let p = parser();
+
+                    match p(state) {
+                        Ok(success) => {
+                            position = success.get_position();
+                            results.push(success.get_result());
+                        },
+                        Err(_) => {
+                            parser_succeeds = false;
+                        }
+                    }
+                }
+
+                if results.len() == 0 {
+                    Err(ParserFailure::new(
+                        "value satisfying parser at least once".to_string(),
+                        None,
+                        state.get_position()
+                    ))
+                } else {
+                    Ok(ParserSuccess::new(results, position))
+                }
+            }
+        );
+
+    Combinator::new(parser)
+}
+
 pub fn sep_by<T, U>(parser: fn() -> Parser<T>, separator: fn() -> Parser<U>) -> Combinator<Vec<T>> 
 where U: 'static
 {
@@ -62,6 +101,51 @@ where U: 'static
                 }
 
                 Ok(ParserSuccess::new(results, position))
+            }
+        );
+    
+    Combinator::new(parser)
+}
+
+pub fn sep_by_1<T, U>(parser: fn() -> Parser<T>, separator: fn() -> Parser<U>) -> Combinator<Vec<T>> 
+where U: 'static
+{
+    let parser =
+        Box::new(
+            move |state: &mut ParserState| {
+                let mut results: Vec<T> = Vec::new();
+                let mut position = state.get_position();
+
+                let mut parser_succeeds = true;
+
+                while parser_succeeds {
+                    let p = parser();
+                    let sep = separator();
+
+                    match p(state) {
+                        Ok(success) => {
+                            position = success.get_position();
+                            results.push(success.get_result());
+
+                            if sep(state).is_err() {
+                                parser_succeeds = false;
+                            }
+                        },
+                        Err(_) => {
+                            parser_succeeds = false;
+                        }
+                    }
+                }
+
+                if results.len() == 0 {
+                    Err(ParserFailure::new(
+                        "value satisfying parser at least once".to_string(),
+                        None,
+                        state.get_position()
+                    ))
+                } else {
+                    Ok(ParserSuccess::new(results, position))
+                }
             }
         );
     

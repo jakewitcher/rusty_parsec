@@ -20,7 +20,7 @@ fn succeeds_parsing_with_many() {
 
     let actual = many(p_hello).run("hellohellohello".to_string());
 
-    assert_eq!(expected, actual)
+    assert_eq!(expected, actual);
 }
 
 #[test]
@@ -29,7 +29,7 @@ fn succeeds_parsing_with_many_returns_empty_vec() {
 
     let actual = many(p_hello).run("worldworldworld".to_string());
 
-    assert_eq!(expected, actual)
+    assert_eq!(expected, actual);
 }
 
 #[test]
@@ -39,6 +39,26 @@ fn succeeds_parsing_with_many_with_compound_parser() {
     let actual = many(p_abc_123).run("abc123abc456abc789".to_string());
 
     assert_eq!(expected, actual);
+}
+
+#[test]
+fn succeeds_parsing_with_many_1() {
+    let expected = Ok(ParserSuccess::new(vec![ "hello".to_string(), "hello".to_string(), "hello".to_string()], Position::new(1, 16, 15)));
+
+    let actual = many_1(p_hello).run("hellohellohello".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_with_many_1() {
+    let expected = Err(ParserFailure::new("value satisfying parser at least once".to_string(), None, Position::new(1, 1, 0)));
+    let err_msg = "expected 'value satisfying parser at least once' but found unknown error at line 1, column 1".to_string();
+
+    let actual = many_1(p_hello).run("worldworldworld".to_string());
+
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
@@ -95,6 +115,34 @@ fn succeeds_parsing_with_sep_by_returns_empty_vec() {
         ).run("a;b;c".to_string());
 
     assert_eq!(expected, actual);
+}
+
+#[test]
+fn succeeds_parsing_with_sep_by_1() {
+    let expected = Ok(ParserSuccess::new(vec![1, 2, 3], Position::new(1, 6, 5)));
+
+    let actual =
+        sep_by_1(
+            || p_u32(),
+            || p_char(';')
+        ).run("1;2;3".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_with_sep_by_1() {
+    let expected = Err(ParserFailure::new("value satisfying parser at least once".to_string(), None, Position::new(1, 1, 0)));
+    let err_msg = "expected 'value satisfying parser at least once' but found unknown error at line 1, column 1".to_string();
+
+    let actual =
+        sep_by_1(
+            || p_u32(),
+            || p_char(';')
+        ).run("a;b;c".to_string());
+
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
