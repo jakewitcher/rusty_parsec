@@ -367,6 +367,28 @@ fn succeeds_parsing_with_opt_returns_none() {
 }
 
 #[test]
+fn succeeds_parsing_with_optional() {
+    let expected = Ok(ParserSuccess::new((), Position::new(1, 4, 3)));
+
+    let actual = 
+        Combinator::new(p_u32()).optional()
+            .run("123".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_with_optional_returns_unit() {
+    let expected = Ok(ParserSuccess::new((), Position::new(1, 1, 0)));
+
+    let actual = 
+        Combinator::new(p_u32()).optional()
+            .run("abc".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
 fn tracks_line_and_column_number_for_error_messaging() {
     let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), Position::new(5, 3, 12)));
     let err_msg = "expected 'b' but found 'c' at line 5, column 3".to_string();
