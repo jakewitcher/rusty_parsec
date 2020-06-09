@@ -152,7 +152,11 @@ where U: 'static
     Combinator::new(parser)
 }
 
-pub fn choice<T>(parsers:Vec<Parser<T>>) -> Combinator<T> {
+pub fn choice<T>(parsers: Vec<Parser<T>>) -> Combinator<T> {
+    choice_l(parsers, "value satisfying choice".to_string())
+}
+
+pub fn choice_l<T>(parsers: Vec<Parser<T>>, label: String) -> Combinator<T> {
     let parser =
         Box::new(
             move |state: &mut ParserState| {
@@ -168,7 +172,7 @@ pub fn choice<T>(parsers:Vec<Parser<T>>) -> Combinator<T> {
                 }
 
                 Err(ParserFailure::new(
-                    "value satisfying choice".to_string(),
+                    label,
                     None,
                     state.get_position()
                 ))
