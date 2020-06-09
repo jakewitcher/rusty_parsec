@@ -134,6 +134,28 @@ impl<T> Combinator<T> {
         Combinator::new(parser)
     }
 
+    pub fn opt(self) -> Combinator<Option<T>> {
+        let parser =
+            Box::new(
+                move |state: &mut ParserState| {
+                    let p = self.get_parser();
+
+                    match p(state) {
+                        Ok(success) => {
+                            let position = success.get_position();
+                            Ok(ParserSuccess::new(Some(success.get_result()), position))
+                        },
+                        _ => {
+                            let position = state.get_position();
+                            Ok(ParserSuccess::new(None, position))
+                        }
+                    }
+                }
+            );
+
+        Combinator::new(parser)
+    }
+
     pub fn map<U>(self, f: Box<dyn Fn(T) -> U>) -> Combinator<U>
     where U: 'static
     {
