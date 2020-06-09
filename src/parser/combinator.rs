@@ -100,6 +100,20 @@ impl<T> Combinator<T> {
         Combinator::new(parser)
     }
 
+    pub fn or_return(self, return_value: T) -> Combinator<T> {
+        let parser =
+            Box::new(
+                move |state: &mut ParserState| {
+                    let p = self.get_parser();
+                    let position = state.get_position();
+
+                    p(state).or(Ok(ParserSuccess::new(return_value, position)))
+                }
+            );
+
+        Combinator::new(parser)
+    }
+
     pub fn between<U, V>(self, p_open: Parser<U>, p_close: Parser<V>) -> Combinator<T>
     where U: 'static, V: 'static
     {

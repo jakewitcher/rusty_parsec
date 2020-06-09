@@ -233,7 +233,7 @@ fn succeeds_parsing_with_map() {
 }
 
 #[test]
-fn succeeds_parsing_then_return() {
+fn succeeds_parsing_with_then_return() {
     let expected = Ok(ParserSuccess::new(true, Position::new(1, 5, 4)));
 
     let p_true = p_string("true".to_string());
@@ -247,7 +247,7 @@ fn succeeds_parsing_then_return() {
 }
 
 #[test]
-fn fails_parsing_then_return() {
+fn fails_parsing_with_then_return() {
     let expected = Err(ParserFailure::new("true".to_string(), Some("blue".to_string()), Position::new(1, 1, 0)));
     let err_msg = "expected 'true' but found 'blue' at line 1, column 1".to_string();
 
@@ -260,6 +260,34 @@ fn fails_parsing_then_return() {
 
     assert_eq!(expected, actual);
     assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
+}
+
+#[test]
+fn succeeds_parsing_with_or_return() {
+    let expected = Ok(ParserSuccess::new("true".to_string(), Position::new(1, 5, 4)));
+
+    let p_true = p_string("true".to_string());
+
+    let actual =
+        Combinator::new(p_true)
+            .or_return("false".to_string())
+            .run("true".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn succeeds_parsing_with_or_return_using_default_return() {
+    let expected = Ok(ParserSuccess::new("false".to_string(), Position::new(1, 1, 0)));
+
+    let p_true = p_string("true".to_string());
+
+    let actual =
+        Combinator::new(p_true)
+            .or_return("false".to_string())
+            .run("hello, world".to_string());
+
+    assert_eq!(expected, actual);
 }
 
 #[test]
