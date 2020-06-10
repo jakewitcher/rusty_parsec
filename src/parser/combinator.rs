@@ -26,10 +26,9 @@ impl<T> Combinator<T> {
                     let left = p(state)?;
                     let right = other(state)?;
 
-                    let position = right.get_position();
                     let result = (left.get_result(), right.get_result());
 
-                    Ok(ParserSuccess::new(result, position))
+                    Ok(ParserSuccess::new(result, state.get_position()))
                 }
             );
 
@@ -105,9 +104,8 @@ impl<T> Combinator<T> {
             Box::new(
                 move |state: &mut ParserState| {
                     let p = self.get_parser();
-                    let position = state.get_position();
 
-                    p(state).or(Ok(ParserSuccess::new(return_value, position)))
+                    p(state).or(Ok(ParserSuccess::new(return_value, state.get_position())))
                 }
             );
 
@@ -142,12 +140,10 @@ impl<T> Combinator<T> {
 
                     match p(state) {
                         Ok(success) => {
-                            let position = success.get_position();
-                            Ok(ParserSuccess::new(Some(success.get_result()), position))
+                            Ok(ParserSuccess::new(Some(success.get_result()), state.get_position()))
                         },
                         _ => {
-                            let position = state.get_position();
-                            Ok(ParserSuccess::new(None, position))
+                            Ok(ParserSuccess::new(None, state.get_position()))
                         }
                     }
                 }

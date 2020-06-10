@@ -5,17 +5,13 @@ pub fn many<T>(parser: fn() -> Parser<T>) -> Combinator<Vec<T>> {
         Box::new(
             move |state: &mut ParserState| {
                 let mut results: Vec<T> = Vec::new();
-                let mut position = state.get_position();
-
                 let mut parser_succeeds = true;
-                
 
                 while parser_succeeds {
                     let p = parser();
 
                     match p(state) {
                         Ok(success) => {
-                            position = success.get_position();
                             results.push(success.get_result());
                         },
                         Err(_) => {
@@ -24,7 +20,7 @@ pub fn many<T>(parser: fn() -> Parser<T>) -> Combinator<Vec<T>> {
                     }
                 }
 
-                Ok(ParserSuccess::new(results, position))
+                Ok(ParserSuccess::new(results, state.get_position()))
             }
         );
 
@@ -36,17 +32,13 @@ pub fn many_1<T>(parser: fn() -> Parser<T>) -> Combinator<Vec<T>> {
         Box::new(
             move |state: &mut ParserState| {
                 let mut results: Vec<T> = Vec::new();
-                let mut position = state.get_position();
-
                 let mut parser_succeeds = true;
-                
 
                 while parser_succeeds {
                     let p = parser();
 
                     match p(state) {
                         Ok(success) => {
-                            position = success.get_position();
                             results.push(success.get_result());
                         },
                         Err(_) => {
@@ -62,7 +54,7 @@ pub fn many_1<T>(parser: fn() -> Parser<T>) -> Combinator<Vec<T>> {
                         state.get_position()
                     ))
                 } else {
-                    Ok(ParserSuccess::new(results, position))
+                    Ok(ParserSuccess::new(results, state.get_position()))
                 }
             }
         );
@@ -77,8 +69,6 @@ where U: 'static
         Box::new(
             move |state: &mut ParserState| {
                 let mut results: Vec<T> = Vec::new();
-                let mut position = state.get_position();
-
                 let mut parser_succeeds = true;
 
                 while parser_succeeds {
@@ -87,7 +77,6 @@ where U: 'static
 
                     match p(state) {
                         Ok(success) => {
-                            position = success.get_position();
                             results.push(success.get_result());
 
                             if sep(state).is_err() {
@@ -100,7 +89,7 @@ where U: 'static
                     }
                 }
 
-                Ok(ParserSuccess::new(results, position))
+                Ok(ParserSuccess::new(results, state.get_position()))
             }
         );
     
@@ -114,8 +103,6 @@ where U: 'static
         Box::new(
             move |state: &mut ParserState| {
                 let mut results: Vec<T> = Vec::new();
-                let mut position = state.get_position();
-
                 let mut parser_succeeds = true;
 
                 while parser_succeeds {
@@ -124,7 +111,6 @@ where U: 'static
 
                     match p(state) {
                         Ok(success) => {
-                            position = success.get_position();
                             results.push(success.get_result());
 
                             if sep(state).is_err() {
@@ -144,7 +130,7 @@ where U: 'static
                         state.get_position()
                     ))
                 } else {
-                    Ok(ParserSuccess::new(results, position))
+                    Ok(ParserSuccess::new(results, state.get_position()))
                 }
             }
         );
@@ -191,14 +177,13 @@ where T: 'static, U: 'static
                 let r1 = p1(state)?;
                 let r2 = p2(state)?;
 
-                let position = r2.get_position();
                 let result = 
                     f(
                         r1.get_result(), 
                         r2.get_result()
                     );
 
-                Ok(ParserSuccess::new(result, position))
+                Ok(ParserSuccess::new(result, state.get_position()))
             }
         );
 
@@ -215,7 +200,6 @@ where T: 'static, U: 'static, V: 'static
                 let r2 = p2(state)?;
                 let r3 = p3(state)?;
 
-                let position = r3.get_position();
                 let result = 
                     f(
                         r1.get_result(), 
@@ -223,7 +207,7 @@ where T: 'static, U: 'static, V: 'static
                         r3.get_result()
                     );
 
-                Ok(ParserSuccess::new(result, position))
+                Ok(ParserSuccess::new(result, state.get_position()))
             }
         );
 
@@ -241,7 +225,6 @@ where T: 'static, U: 'static, V: 'static, W: 'static
                 let r3 = p3(state)?;
                 let r4 = p4(state)?;
 
-                let position = r4.get_position();
                 let result = 
                     f(
                         r1.get_result(), 
@@ -250,7 +233,7 @@ where T: 'static, U: 'static, V: 'static, W: 'static
                         r4.get_result()
                     );
 
-                Ok(ParserSuccess::new(result, position))
+                Ok(ParserSuccess::new(result, state.get_position()))
             }
         );
 
@@ -269,7 +252,6 @@ where T: 'static, U: 'static, V: 'static, W: 'static, X: 'static
                 let r4 = p4(state)?;
                 let r5 = p5(state)?;
 
-                let position = r5.get_position();
                 let result = 
                     f(
                         r1.get_result(), 
@@ -279,7 +261,7 @@ where T: 'static, U: 'static, V: 'static, W: 'static, X: 'static
                         r5.get_result()
                     );
 
-                Ok(ParserSuccess::new(result, position))
+                Ok(ParserSuccess::new(result, state.get_position()))
             }
         );
 
