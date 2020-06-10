@@ -4,8 +4,8 @@ pub mod parsers;
 pub mod combinators;
 pub mod state;
 
-pub use combinator::Combinator;
+pub use combinator::Parser;
 pub use state::ParserState;
 pub use result::{Position, ParserSuccess, ParserFailure, ParserResult};
 
-pub type Parser<T> = Box<dyn FnOnce(&mut ParserState) -> ParserResult<T>>;
+pub type ParserFn <T> = Box<dyn FnOnce(&mut ParserState) -> ParserResult<T>>;

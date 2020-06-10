@@ -1,30 +1,32 @@
-use super::{Parser, ParserState, ParserSuccess, ParserResult};
+use super::{ParserFn, ParserState, ParserSuccess, ParserResult};
 
-pub struct Combinator<T>
+pub struct Parser<T>
 where T: 'static
 {
-    parser: Parser<T>
+    parser_fn: ParserFn<T>
 }
 
-impl<T> Combinator<T> {
-    pub fn new(parser: Parser<T>) -> Combinator<T> {
-        Combinator { parser }
+impl<T> Parser<T> {
+    pub fn new(parser_fn: ParserFn<T>) -> Parser<T> {
+        Parser { parser_fn }
     }
 
-    pub fn get_parser(self) -> Parser<T> {
-        self.parser
+    pub fn get(self) -> ParserFn<T> {
+        self.parser_fn
     }
 
-    pub fn and<U>(self, other: Parser<U>) -> Combinator<(T, U)>
+    pub fn parse(self, state: &mut ParserState) -> ParserResult<T> {
+        self.get()(state)
+    }
+
+    pub fn and<U>(self, other: Parser<U>) -> Parser<(T, U)>
     where U: 'static
     {
-        let parser =
+        let parser_fn =
             Box::new(
                 move |state: &mut ParserState| {
-                    let p = self.get_parser();
-
-                    let left = p(state)?;
-                    let right = other(state)?;
+                    let left = self.parse(state)?;
+                    let right = other.parse(state)?;
 
                     let result = (left.get_result(), right.get_result());
 
@@ -32,113 +34,95 @@ impl<T> Combinator<T> {
                 }
             );
 
-        Combinator::new(parser)
+        Parser::new(parser_fn)
     }
 
-    pub fn or(self, other: Parser<T>) -> Combinator<T>
+    pub fn or(self, other: Parser<T>) -> Parser<T>
     {
-        let parser =
+        let parser_fn =
             Box::new(
-                move |state: &mut ParserState| {
-                    let p = self.get_parser();
-
-                    p(state).or(other(state))
-                }
+                move |state: &mut ParserState| 
+                    self.parse(state).or(other.parse(state))
             );
 
-        Combinator::new(parser)
+        Parser::new(parser_fn)
     }
 
-    pub fn take_prev<U>(self, other: Parser<U>) -> Combinator<T>
+    pub fn take_prev<U>(self, other: Parser<U>) -> Parser<T>
     where U: 'static
     {
-        let parser =
+        let parser_fn =
             Box::new(
                 move |state: &mut ParserState| {
-                    let p = self.get_parser();
-
-                    let prev = p(state)?;
-                    let next = other(state)?;
+                    let prev = self.parse(state)?;
+                    let next = other.parse(state)?;
                     
                     Ok(prev.with_position(next.get_position()))
                 }
             );
 
-        Combinator::new(parser)
+        Parser::new(parser_fn)
     }
 
-    pub fn take_next<U>(self, other: Parser<U>) -> Combinator<U>
+    pub fn take_next<U>(self, other: Parser<U>) -> Parser<U>
     where U: 'static
     {
-        let parser =
+        let parser_fn =
             Box::new(
-                move |state: &mut ParserState| {
-                    let p = self.get_parser();
-
-                    p(state).and(other(state))
-                }
+                move |state: &mut ParserState|
+                    self.parse(state).and(other.parse(state))
             );
 
-        Combinator::new(parser)
+        Parser::new(parser_fn)
     }
 
-    pub fn then_return<U>(self, return_value: U) -> Combinator<U>
+    pub fn then_return<U>(self, return_value: U) -> Parser<U>
     where U: 'static
     {
-        let parser =
+        let parser_fn =
             Box::new(
                 move |state: &mut ParserState| {
-                    let p = self.get_parser();
-
-                    let result = p(state)?;
-                    
+                    let result = self.parse(state)?;
                     Ok(ParserSuccess::new(return_value, result.get_position()))
                 }
             );
 
-        Combinator::new(parser)
+        Parser::new(parser_fn)
     }
 
-    pub fn or_return(self, return_value: T) -> Combinator<T> {
-        let parser =
+    pub fn or_return(self, return_value: T) -> Parser<T> {
+        let parser_fn =
             Box::new(
                 move |state: &mut ParserState| {
-                    let p = self.get_parser();
-
-                    p(state).or(Ok(ParserSuccess::new(return_value, state.get_position())))
+                    self.parse(state).or(Ok(ParserSuccess::new(return_value, state.get_position())))
                 }
             );
 
-        Combinator::new(parser)
+        Parser::new(parser_fn)
     }
 
-    pub fn between<U, V>(self, p_open: Parser<U>, p_close: Parser<V>) -> Combinator<T>
+    pub fn between<U, V>(self, p_open: Parser<U>, p_close: Parser<V>) -> Parser<T>
     where U: 'static, V: 'static
     {
-        let parser =
+        let parser_fn =
             Box::new(
                 move |state: &mut ParserState| {
-                    let p = self.get_parser();
-
-                    p_open(state)?;
-
-                    let result = p(state)?;
-                    let close = p_close(state)?;
+                    p_open.parse(state)?;
+                    let result = self.parse(state)?;
+                    let close = p_close.parse(state)?;
 
                     Ok(result.with_position(close.get_position()))
                 }
             );
 
-        Combinator::new(parser)
+        Parser::new(parser_fn)
     }
 
-    pub fn opt(self) -> Combinator<Option<T>> {
-        let parser =
+    pub fn opt(self) -> Parser<Option<T>> {
+        let parser_fn =
             Box::new(
                 move |state: &mut ParserState| {
-                    let p = self.get_parser();
-
-                    match p(state) {
+                    match self.parse(state) {
                         Ok(success) => {
                             Ok(ParserSuccess::new(Some(success.get_result()), state.get_position()))
                         },
@@ -149,44 +133,38 @@ impl<T> Combinator<T> {
                 }
             );
 
-        Combinator::new(parser)
+        Parser::new(parser_fn)
     }
 
-    pub fn optional(self) -> Combinator<()> {
-        let parser =
+    pub fn optional(self) -> Parser<()> {
+        let parser_fn =
             Box::new(
                 move |state: &mut ParserState| {
-                    let p = self.get_parser();
-
-                    match p(state) {
+                    match self.parse(state) {
                         _ => Ok(ParserSuccess::new((), state.get_position())),
                     }
                 }
             );
 
-        Combinator::new(parser)
+        Parser::new(parser_fn)
     }
 
-    pub fn map<U>(self, f: Box<dyn Fn(T) -> U>) -> Combinator<U>
+    pub fn map<U>(self, f: Box<dyn Fn(T) -> U>) -> Parser<U>
     where U: 'static
     {
-        let parser =
+        let parser_fn =
             Box::new(
                 move |state: &mut ParserState| {
-                    let p = self.parser;
-                    let result = p(state)?;
+                    let result = self.parse(state)?;
 
                     Ok(result.map_result(f))
                 }
             );
 
-        Combinator::new(parser)
+        Parser::new(parser_fn)
     }
 
     pub fn run(self, input: String) -> ParserResult<T> {
-        let parser = self.parser;
-        let mut state = ParserState::new(input);
-
-        parser(&mut state)
+        self.parse(&mut ParserState::new(input))
     }
 }

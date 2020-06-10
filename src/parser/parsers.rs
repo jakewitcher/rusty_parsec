@@ -15,68 +15,77 @@ pub fn skip_char(target: char) -> Parser<()> {
 pub fn char_return<T>(target: char, return_value: T) -> Parser<T> 
 where T: 'static
 {
-    Box::new(
-        move |state: &mut ParserState| {
-            match state.get_remaining_input().chars().next() {
-                Some(c) if c == target => {
-                    state.move_input_state_forward(target.len_utf8());
-                    Ok(ParserSuccess::new(return_value, state.get_position()))
-                },
-                Some(c) => {
-                    Err(ParserFailure::new(
-                        target.to_string(),
-                        Some(c.to_string()),
-                        state.get_position()
-                    ))
-                },
-                None => {
-                    Err(ParserFailure::new(
-                        target.to_string(),
-                        None,
-                        state.get_position()
-                    ))
-                },
+    let parser_fn =
+        Box::new(
+            move |state: &mut ParserState| {
+                match state.get_remaining_input().chars().next() {
+                    Some(c) if c == target => {
+                        state.move_input_state_forward(target.len_utf8());
+                        Ok(ParserSuccess::new(return_value, state.get_position()))
+                    },
+                    Some(c) => {
+                        Err(ParserFailure::new(
+                            target.to_string(),
+                            Some(c.to_string()),
+                            state.get_position()
+                        ))
+                    },
+                    None => {
+                        Err(ParserFailure::new(
+                            target.to_string(),
+                            None,
+                            state.get_position()
+                        ))
+                    },
+                }
             }
-        }
-    )
+        );
+
+    Parser::new(parser_fn)
 }
 
 pub fn satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<char> {
-    Box::new(
-        move |state: &mut ParserState| {
-            match state.get_remaining_input().chars().next() {
-                Some(c) if f(c) => {
-                    state.move_input_state_forward(c.len_utf8());
-                    Ok(ParserSuccess::new(c, state.get_position()))
-                },
-                _ => {
-                    Err(ParserFailure::new(
-                        "char satisfying the condition".to_string(),
-                        None,
-                        state.get_position()
-                    ))
-                },
+    let parser_fn =
+        Box::new(
+            move |state: &mut ParserState| {
+                match state.get_remaining_input().chars().next() {
+                    Some(c) if f(c) => {
+                        state.move_input_state_forward(c.len_utf8());
+                        Ok(ParserSuccess::new(c, state.get_position()))
+                    },
+                    _ => {
+                        Err(ParserFailure::new(
+                            "char satisfying the condition".to_string(),
+                            None,
+                            state.get_position()
+                        ))
+                    },
+                }
             }
-        }
-    )
+        );
+
+    Parser::new(parser_fn)
 }
 
 pub fn many_satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<String> {
-    Box::new(
-        move |state: &mut ParserState| {
-            let mut count = 0;
-            for c in state.get_remaining_input().chars() {
-                if f(c) {
-                    count += c.len_utf8();
-                } else {
-                    break;
+    let parser_fn =
+        Box::new(
+            move |state: &mut ParserState| {
+                let mut count = 0;
+                for c in state.get_remaining_input().chars() {
+                    if f(c) {
+                        count += c.len_utf8();
+                    } else {
+                        break;
+                    }
                 }
+                let result = state.get_slice(count).unwrap_or(String::new());
+                state.move_input_state_forward(count);
+                Ok(ParserSuccess::new(result, state.get_position()))
             }
-            let result = state.get_slice(count).unwrap_or(String::new());
-            state.move_input_state_forward(count);
-            Ok(ParserSuccess::new(result, state.get_position()))
-        }
-    )
+        );
+
+    Parser::new(parser_fn)
 }
 
 pub fn p_string(target: String) -> Parser<String> {
@@ -90,30 +99,33 @@ pub fn skip_string(target: String) -> Parser<()> {
 pub fn string_return<T>(target: String, return_value: T) -> Parser<T> 
 where T: 'static
 {
-    Box::new(
-        move |state: &mut ParserState| {
-            match state.get_slice(target.len()) {
-                Some(s) if s == target => {
-                    state.move_input_state_forward(target.len());
-                    Ok(ParserSuccess::new(return_value, state.get_position()))
-                },
-                Some(s) => {
-                    Err(ParserFailure::new(
-                        target,
-                        Some(s),
-                        state.get_position()
-                    ))
-                },
-                None => {
-                    Err(ParserFailure::new(
-                        target,
-                        None,
-                        state.get_position()
-                    ))
-                },
+    let parser_fn =
+        Box::new(
+            move |state: &mut ParserState| {
+                match state.get_slice(target.len()) {
+                    Some(s) if s == target => {
+                        state.move_input_state_forward(target.len());
+                        Ok(ParserSuccess::new(return_value, state.get_position()))
+                    },
+                    Some(s) => {
+                        Err(ParserFailure::new(
+                            target,
+                            Some(s),
+                            state.get_position()
+                        ))
+                    },
+                    None => {
+                        Err(ParserFailure::new(
+                            target,
+                            None,
+                            state.get_position()
+                        ))
+                    },
+                }
             }
-        }
-    )
+        );
+
+    Parser::new(parser_fn)
 }
 
 pub fn p_i32() -> Parser<i32> {
@@ -143,32 +155,35 @@ pub fn p_iusize() -> Parser<usize> {
 fn p_int<T>(parse_num: Box<dyn Fn(String) -> Result<T, std::num::ParseIntError>>) -> Parser<T> 
 where T: PrimInt + 'static
 {
-    Box::new(
-        move |state: &mut ParserState| {
-            let mut count = 0;
+    let parser_fn =
+        Box::new(
+            move |state: &mut ParserState| {
+                let mut count = 0;
 
-            for c in state.get_remaining_input().chars() {
-                if c.is_numeric() || c == '-' && count == 0 {
-                    count += c.len_utf8();
-                } else {
-                    break;
+                for c in state.get_remaining_input().chars() {
+                    if c.is_numeric() || c == '-' && count == 0 {
+                        count += c.len_utf8();
+                    } else {
+                        break;
+                    }
+                }
+
+                match state.get_slice(count).map(|s| parse_num(s)) {
+                    Some(Ok(int)) => {
+                        state.move_input_state_forward(count);
+                        Ok(ParserSuccess::new(int, state.get_position()))
+                    },
+                    _ =>
+                        Err(ParserFailure::new(
+                            "integral value".to_string(),
+                            None,
+                            state.get_position())
+                        ),
                 }
             }
+        );
 
-            match state.get_slice(count).map(|s| parse_num(s)) {
-                Some(Ok(int)) => {
-                    state.move_input_state_forward(count);
-                    Ok(ParserSuccess::new(int, state.get_position()))
-                },
-                _ =>
-                    Err(ParserFailure::new(
-                        "integral value".to_string(),
-                        None,
-                        state.get_position())
-                    ),
-            }
-        }
-    )
+    Parser::new(parser_fn)
 }
 
 pub fn p_f32() -> Parser<f32> {
@@ -182,54 +197,60 @@ pub fn p_f64() -> Parser<f64> {
 fn p_float<T>(parse_num: Box<dyn Fn(String) -> Result<T, std::num::ParseFloatError>>) -> Parser<T> 
 where T: Float + 'static
 {
-    Box::new(
-        move |state: &mut ParserState| {
-            let mut count = 0;
-            let mut has_decimal_point = false;
+    let parser_fn =
+        Box::new(
+            move |state: &mut ParserState| {
+                let mut count = 0;
+                let mut has_decimal_point = false;
 
-            for c in state.get_remaining_input().chars() {
-                if c.is_numeric() || c == '-' && count == 0 {
-                    count += c.len_utf8();
-                } else if c == '.' && has_decimal_point == false {
-                    has_decimal_point = true;
-                    count += c.len_utf8();
-                } else {
-                    break;
+                for c in state.get_remaining_input().chars() {
+                    if c.is_numeric() || c == '-' && count == 0 {
+                        count += c.len_utf8();
+                    } else if c == '.' && has_decimal_point == false {
+                        has_decimal_point = true;
+                        count += c.len_utf8();
+                    } else {
+                        break;
+                    }
+                }
+
+                match state.get_slice(count).map(|s| parse_num(s)) {
+                    Some(Ok(float)) if float.is_finite() => {
+                        state.move_input_state_forward(count);
+                        Ok(ParserSuccess::new(float, state.get_position()))
+                    },
+                    _ =>
+                        Err(ParserFailure::new(
+                            "floating point value".to_string(),
+                            None,
+                            state.get_position())
+                        ),
                 }
             }
+        );
 
-            match state.get_slice(count).map(|s| parse_num(s)) {
-                Some(Ok(float)) if float.is_finite() => {
-                    state.move_input_state_forward(count);
-                    Ok(ParserSuccess::new(float, state.get_position()))
-                },
-                _ =>
-                    Err(ParserFailure::new(
-                        "floating point value".to_string(),
-                        None,
-                        state.get_position())
-                    ),
-            }
-        }
-    )
+    Parser::new(parser_fn)
 }
 
 pub fn ws() -> Parser<()> {
-    Box::new(
-        move |state: &mut ParserState| {
-            let mut count = 0;
+    let parser_fn =
+        Box::new(
+            move |state: &mut ParserState| {
+                let mut count = 0;
 
-            for c in state.get_remaining_input().chars()  {
-                if c.is_ascii_whitespace() {
-                    count += c.len_utf8();
-                } else {
-                    break;
+                for c in state.get_remaining_input().chars()  {
+                    if c.is_ascii_whitespace() {
+                        count += c.len_utf8();
+                    } else {
+                        break;
+                    }
                 }
-            }
 
-            state.move_input_state_forward(count);
-            Ok(ParserSuccess::new((), state.get_position()))
-        }
-    )
+                state.move_input_state_forward(count);
+                Ok(ParserSuccess::new((), state.get_position()))
+            }
+        );
+
+    Parser::new(parser_fn)
 }
 
