@@ -1,4 +1,4 @@
-use super::{Parser, ParserState, ParserSuccess, ParserFailure};
+use super::{ParserState, ParserSuccess, ParserFailure, Parser};
 
 pub fn many<T>(parser: fn() -> Parser<T>) -> Parser<Vec<T>> {
     let parser =
