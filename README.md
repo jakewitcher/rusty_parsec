@@ -1,8 +1,6 @@
 # Rusty Parsec
 
-Rusty Parsec is a parser combinator library in Rust based on the F# library FParsec. Which was based on the Haskell library Parsec. 
-
-Par-secption.
+Rusty Parsec is a parser combinator library in Rust based on the F# library FParsec.
 
 Rusty Parsec is in very early stages of development and I am not an experienced Rust developer, as such this library has a long way to go.
 
