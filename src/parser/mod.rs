@@ -19,12 +19,9 @@ impl<T> Parser<T> {
         Parser { parser_fn }
     }
 
-    pub fn get(self) -> ParserFn<T> {
-        self.parser_fn
-    }
-
     pub fn parse(self, state: &mut ParserState) -> ParserResult<T> {
-        self.get()(state)
+        let p =self.parser_fn;
+        p(state)
     }
 
     pub fn and<U>(self, other: Parser<U>) -> Parser<(T, U)>
