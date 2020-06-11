@@ -1,8 +1,8 @@
 use rusty_parsec::*;
 
 fn p_true() -> Parser<bool> {
-    Combinator::new(p_string("true".to_string()))
-        .then_return(true).get_parser()
+    p_string("true".to_string())
+        .then_return(true)
 }
 
 fn p_hello() -> Parser<String> {
@@ -10,8 +10,7 @@ fn p_hello() -> Parser<String> {
 }
 
 fn p_abc_123() -> Parser<(String, u32)> {
-    let p_abc = p_string("abc".to_string());
-    tuple_2(p_abc, p_u32()).get_parser()
+    tuple_2(p_string("abc".to_string()), p_u32())
 }
 
 #[test]

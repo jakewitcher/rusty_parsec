@@ -14,8 +14,7 @@ let p_world = p_string("world".to_string());
 let p_comma = p_char(',');
 
 let parser = 
-    Combinator::new(p_hello)
-        .or(p_goodbye)
+    p_hello.or(p_goodbye)
         .take_prev(p_comma)
         .take_prev(ws())
         .and(p_world);
