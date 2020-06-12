@@ -12,6 +12,7 @@ pub struct ParserState {
     prev_slice_start: Vec<usize>,
     current_line_start: LineStart,
     prev_line_start: Vec<LineStart>,
+    marker: Option<usize>,
 }
 
 impl ParserState {
@@ -23,6 +24,7 @@ impl ParserState {
             prev_slice_start: vec![0],
             current_line_start: LineStart::FirstLine,
             prev_line_start: vec![],
+            marker: None,
         }
     }
 
@@ -116,6 +118,21 @@ impl ParserState {
         }
     }
 
+    pub fn mark(&mut self) {
+        self.marker = Some(self.current_slice_start);
+    }
+
+    pub fn revert(&mut self) {
+        match self.marker {
+            Some(marker) => {
+                while self.current_slice_start != marker {
+                    self.move_input_state_back();
+                }
+            },
+            _ => ()
+        }
+    }
+
     pub fn get_slice(&self, length: usize) -> Option<String> {
         let slice_end = self.current_slice_start + length;
 
@@ -153,10 +170,10 @@ mod tests {
 
     #[test]
     fn gets_remaining_slice_of_input_to_be_parsed() {
-        let mut parser_state = ParserState::new("hello, world".to_string());
+        let mut state = ParserState::new("hello, world".to_string());
         
-        parser_state.move_input_state_forward("hello".len());
-        let remaining_input = parser_state.get_remaining_input();
+        state.move_input_state_forward("hello".len());
+        let remaining_input = state.get_remaining_input();
 
         assert_eq!(", world", remaining_input);
     }
@@ -164,92 +181,108 @@ mod tests {
     #[test]
     #[should_panic(expected = "will exceed the input length")]
     fn get_remaining_slice_panics_if_slice_start_exceeds_input_length() {
-        let mut parser_state = ParserState::new("hello".to_string());
-        parser_state.current_slice_start = 7;
-        parser_state.get_remaining_input();
+        let mut state = ParserState::new("hello".to_string());
+        state.current_slice_start = 7;
+        state.get_remaining_input();
     }
 
     #[test]
     fn move_input_state_forward_increments_current_slice_start_by_one() {
-        let mut parser_state = ParserState::new("hello".to_string());
+        let mut state = ParserState::new("hello".to_string());
         
-        parser_state.move_input_state_forward('h'.len_utf8());
+        state.move_input_state_forward('h'.len_utf8());
 
-        assert_eq!('h'.len_utf8(), parser_state.current_slice_start);
+        assert_eq!('h'.len_utf8(), state.current_slice_start);
     }
 
     #[test]
     fn move_input_state_forward_increments_current_slice_start_by_many() {
-        let mut parser_state = ParserState::new("hello, world".to_string());
+        let mut state = ParserState::new("hello, world".to_string());
         
-        parser_state.move_input_state_forward("hello".len());
+        state.move_input_state_forward("hello".len());
 
-        assert_eq!("hello".len(), parser_state.current_slice_start);
+        assert_eq!("hello".len(), state.current_slice_start);
     }
 
     #[test]
     fn move_input_state_forward_increments_current_line_start() {
-        let mut parser_state = ParserState::new("hello\nworld".to_string());
+        let mut state = ParserState::new("hello\nworld".to_string());
         
-        parser_state.move_input_state_forward("hello\nwo".len());
+        state.move_input_state_forward("hello\nwo".len());
 
         let expected = LineStart::Index(5);
 
-        assert_eq!(expected, parser_state.current_line_start);
+        assert_eq!(expected, state.current_line_start);
     }
 
     #[test]
     fn move_input_state_forward_does_not_increment_current_line_start() {
-        let mut parser_state = ParserState::new("hello\nworld".to_string());
+        let mut state = ParserState::new("hello\nworld".to_string());
         
-        parser_state.move_input_state_forward("hello".len());
+        state.move_input_state_forward("hello".len());
 
         let expected = LineStart::FirstLine;
 
-        assert_eq!(expected, parser_state.current_line_start);
+        assert_eq!(expected, state.current_line_start);
     }
 
     #[test]
     #[should_panic(expected = "will exceed the input length")]
     fn move_input_state_forward_panics_if_increment_exceeds_input_length() {
-        let mut parser_state = ParserState::new("hello".to_string());
+        let mut state = ParserState::new("hello".to_string());
 
-        parser_state.move_input_state_forward(7);
+        state.move_input_state_forward(7);
     }
 
     #[test]
     fn move_input_state_back_sets_current_slice_start_back_one() {
-        let mut parser_state = ParserState::new("hello, world".to_string());
+        let mut state = ParserState::new("hello, world".to_string());
 
-        parser_state.move_input_state_forward("hello".len());
-        parser_state.move_input_state_forward(", ".len());
+        state.move_input_state_forward("hello".len());
+        state.move_input_state_forward(", ".len());
 
-        assert_eq!(7, parser_state.current_slice_start);
+        assert_eq!(7, state.current_slice_start);
 
-        parser_state.move_input_state_back();
+        state.move_input_state_back();
 
-        assert_eq!(5, parser_state.current_slice_start);
+        assert_eq!(5, state.current_slice_start);
 
-        parser_state.move_input_state_back();
+        state.move_input_state_back();
 
-        assert_eq!(0, parser_state.current_slice_start);
+        assert_eq!(0, state.current_slice_start);
     }
 
     #[test]
     fn move_input_state_back_sets_current_line_start_back_one() {
-        let mut parser_state = ParserState::new("hello\n, \nworld".to_string());
+        let mut state = ParserState::new("hello\n, \nworld".to_string());
 
-        parser_state.move_input_state_forward("hello\n,".len());
-        parser_state.move_input_state_forward(" \nw".len());
+        state.move_input_state_forward("hello\n,".len());
+        state.move_input_state_forward(" \nw".len());
 
-        assert_eq!(LineStart::Index(8), parser_state.current_line_start);
+        assert_eq!(LineStart::Index(8), state.current_line_start);
 
-        parser_state.move_input_state_back();
+        state.move_input_state_back();
 
-        assert_eq!(LineStart::Index(5), parser_state.current_line_start);
+        assert_eq!(LineStart::Index(5), state.current_line_start);
 
-        parser_state.move_input_state_back();
+        state.move_input_state_back();
 
-        assert_eq!(LineStart::FirstLine, parser_state.current_line_start);
+        assert_eq!(LineStart::FirstLine, state.current_line_start);
+    }
+
+    #[test]
+    fn marks_current_slice_start_and_reverts_state_back_to_marker() {
+        let mut state = ParserState::new("hello, world".to_string());
+
+        state.move_input_state_forward("hello".len());
+
+        state.mark();
+
+        state.move_input_state_forward(", ".len());
+        state.move_input_state_forward("world".len());
+
+        state.revert();
+
+        assert_eq!(5, state.current_slice_start);
     }
 }

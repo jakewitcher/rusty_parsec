@@ -160,12 +160,14 @@ impl<T> Parser<T> {
                 move |state: &mut ParserState| {
                     let result = self.parse(state)?;
 
+                    state.mark();
                     match parser.parse(state) {
                         Ok(_) => {
-                            state.move_input_state_back();
+                            state.revert();
                             Ok(ParserSuccess::new(result.get_result(), state.get_position()))
                         },
                         _ => {
+                            state.revert();
                             Err(ParserFailure::new(
                                 "followed by parser to succeed".to_string(),
                                 None,
