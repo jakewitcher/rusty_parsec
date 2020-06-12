@@ -322,29 +322,6 @@ fn fails_parsing_with_optional_returns_unit() {
 
 #[test]
 fn succeeds_parsing_with_followed_by() {
-    let expected = Ok(ParserSuccess::new(123, Position::new(1, 4, 3)));
-
-    let actual =
-        p_u32().followed_by(p_string("abc".to_string()))
-            .run("123abc".to_string());
-
-    assert_eq!(expected, actual);
-}
-
-#[test]
-fn succeeds_parsing_with_followed_by_using_compound_parser() {
-    let expected = Ok(ParserSuccess::new((123, "abc".to_string()), Position::new(1, 7, 6)));
-
-    let actual =
-        p_u32().and(p_string("abc".to_string()))
-            .followed_by(p_string("def".to_string()))
-            .run("123abcdef".to_string());
-
-    assert_eq!(expected, actual);
-}
-
-#[test]
-fn succeeds_parsing_with_followed_by_using_compound_following_parser() {
     let expected = Ok(ParserSuccess::new((123, "abc".to_string()), Position::new(1, 7, 6)));
 
     let p_helloworld =
@@ -361,33 +338,6 @@ fn succeeds_parsing_with_followed_by_using_compound_following_parser() {
 
 #[test]
 fn fails_parsing_with_followed_by() {
-    let expected = Err(ParserFailure::new("following parser to succeed".to_string(), None, Position::new(1, 4, 3)));
-    let err_msg = "expected 'following parser to succeed' but found unknown error at line 1, column 4".to_string();
-
-    let actual =
-        p_u32().followed_by(p_string("abc".to_string()))
-            .run("123def".to_string());
-
-    assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
-}
-
-#[test]
-fn fails_parsing_with_followed_by_using_compound_parser() {
-    let expected = Err(ParserFailure::new("following parser to succeed".to_string(), None, Position::new(1, 7, 6)));
-    let err_msg = "expected 'following parser to succeed' but found unknown error at line 1, column 7".to_string();
-
-    let actual =
-        p_u32().and(p_string("abc".to_string()))
-            .followed_by(p_string("def".to_string()))
-            .run("123abc456".to_string());
-
-    assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
-}
-
-#[test]
-fn fails_parsing_with_followed_by_using_compound_following_parser() {
     let expected = Err(ParserFailure::new("following parser to succeed".to_string(), None, Position::new(1, 7, 6)));
     let err_msg = "expected 'following parser to succeed' but found unknown error at line 1, column 7".to_string();
 
@@ -405,7 +355,7 @@ fn fails_parsing_with_followed_by_using_compound_following_parser() {
 }
 
 #[test]
-fn succeeds_parsing_with_not_followed_by_using_compound_following_parser() {
+fn succeeds_parsing_with_not_followed_by() {
     let expected = Ok(ParserSuccess::new((123, "abc".to_string()), Position::new(1, 7, 6)));
 
     let p_helloworld =
