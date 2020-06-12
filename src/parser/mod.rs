@@ -155,6 +155,10 @@ impl<T> Parser<T> {
     }
 
     pub fn followed_by<U>(self, parser: Parser<U>) -> Parser<T> {
+        self.followed_by_l(parser, "followed by parser to succeed".to_string())
+    }
+
+    pub fn followed_by_l<U>(self, parser: Parser<U>, label: String) -> Parser<T> {
         let parser_fn =
             Box::new(
                 move |state: &mut ParserState| {
@@ -169,7 +173,7 @@ impl<T> Parser<T> {
                         _ => {
                             state.revert();
                             Err(ParserFailure::new(
-                                "followed by parser to succeed".to_string(),
+                                label,
                                 None,
                                 state.get_position()
                             ))
