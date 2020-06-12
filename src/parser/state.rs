@@ -290,4 +290,25 @@ mod tests {
 
         assert_eq!(5, state.current_slice_start);
     }
+
+    #[test]
+    fn calling_revert_with_no_change_in_state_does_not_affect_parser_state() {
+        let mut state = ParserState::new("hello, world".to_string());
+
+        state.move_input_state_forward("hello".len());
+        state.mark();
+        state.revert();
+
+        assert_eq!(5, state.current_slice_start);
+    }
+
+    #[test]
+    fn calling_revert_with_no_marker_does_not_affect_parser_state() {
+        let mut state = ParserState::new("hello, world".to_string());
+        assert_eq!(0, state.current_slice_start);
+
+        state.revert();
+
+        assert_eq!(0, state.current_slice_start);
+    }
 }
