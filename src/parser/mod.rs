@@ -154,6 +154,32 @@ impl<T> Parser<T> {
         Parser::new(parser_fn)
     }
 
+    pub fn followed_by<U>(self, parser: Parser<U>) -> Parser<T> {
+        let parser_fn =
+            Box::new(
+                move |state: &mut ParserState| {
+                    let result = self.parse(state)?;
+
+                    match parser.parse(state) {
+                        Ok(_) => {
+                            state.move_input_state_back();
+                            Ok(ParserSuccess::new(result.get_result(), state.get_position()))
+                        },
+                        _ => {
+                            state.move_input_state_back();
+                            Err(ParserFailure::new(
+                                "followed by parser to succeed".to_string(),
+                                None,
+                                state.get_position()
+                            ))
+                        }
+                    }
+                }
+            );
+
+        Parser::new(parser_fn)
+    }
+
     pub fn map<U>(self, f: Box<dyn Fn(T) -> U>) -> Parser<U>
     where U: 'static
     {
