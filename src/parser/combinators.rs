@@ -143,7 +143,11 @@ pub fn choice_l<T>(parsers: Vec<Parser<T>>, label: String) -> Parser<T> {
                         Ok(success) => {
                             return Ok(success)
                         },
-                        _ => {
+                        Err(failure) => {
+                            if failure.is_fatal() {
+                                return Err(failure)
+                            }
+                            
                             continue;
                         }
                     } 

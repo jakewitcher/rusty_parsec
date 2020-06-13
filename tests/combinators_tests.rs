@@ -91,6 +91,21 @@ fn fails_parsing_with_choice() {
 }
 
 #[test]
+fn fails_parsing_with_choice_fatal_err() {
+    let expected = Err(ParserFailure::new("e".to_string(), Some("f".to_string()), Severity::FatalError, Position::new(1, 2, 1)));
+    let err_msg = "expected 'e' but found 'f' at line 1, column 2".to_string();
+
+    let actual =
+        choice(vec![
+            p_char('a').and(p_char('b')),
+            p_char('d').and(p_char('e'))
+        ]).run("df".to_string());
+
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
+}
+
+#[test]
 fn succeeds_parsing_with_sep_by() {
     let expected = Ok(ParserSuccess::new(vec![1, 2, 3], Position::new(1, 6, 5)));
 
