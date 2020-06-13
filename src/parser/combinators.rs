@@ -147,7 +147,7 @@ pub fn choice_l<T>(parsers: Vec<Parser<T>>, label: String) -> Parser<T> {
                             if failure.is_fatal() {
                                 return Err(failure)
                             }
-                            
+
                             continue;
                         }
                     } 
@@ -195,7 +195,11 @@ where T: 'static, U: 'static
         Box::new(
             move |state: &mut ParserState| {
                 let r1 = p1.parse(state)?;
-                let r2 = p2.parse(state)?;
+
+                let r2 = match p2.parse(state) {
+                    Ok(success) => success,
+                    Err(failure) => return Err(failure.to_fatal_error())
+                };
 
                 let result = 
                     f(
@@ -217,8 +221,16 @@ where T: 'static, U: 'static, V: 'static
         Box::new(
             move |state: &mut ParserState| {
                 let r1 = p1.parse(state)?;
-                let r2 = p2.parse(state)?;
-                let r3 = p3.parse(state)?;
+
+                let r2 = match p2.parse(state) {
+                    Ok(success) => success,
+                    Err(failure) => return Err(failure.to_fatal_error())
+                };
+                
+                let r3 = match p3.parse(state) {
+                    Ok(success) => success,
+                    Err(failure) => return Err(failure.to_fatal_error())
+                };
 
                 let result = 
                     f(
@@ -241,9 +253,21 @@ where T: 'static, U: 'static, V: 'static, W: 'static
         Box::new(
             move |state: &mut ParserState| {
                 let r1 = p1.parse(state)?;
-                let r2 = p2.parse(state)?;
-                let r3 = p3.parse(state)?;
-                let r4 = p4.parse(state)?;
+                
+                let r2 = match p2.parse(state) {
+                    Ok(success) => success,
+                    Err(failure) => return Err(failure.to_fatal_error())
+                };
+
+                let r3 = match p3.parse(state) {
+                    Ok(success) => success,
+                    Err(failure) => return Err(failure.to_fatal_error())
+                };
+
+                let r4 = match p4.parse(state) {
+                    Ok(success) => success,
+                    Err(failure) => return Err(failure.to_fatal_error())
+                };
 
                 let result = 
                     f(
@@ -267,10 +291,26 @@ where T: 'static, U: 'static, V: 'static, W: 'static, X: 'static
         Box::new(
             move |state: &mut ParserState| {
                 let r1 = p1.parse(state)?;
-                let r2 = p2.parse(state)?;
-                let r3 = p3.parse(state)?;
-                let r4 = p4.parse(state)?;
-                let r5 = p5.parse(state)?;
+                
+                let r2 = match p2.parse(state) {
+                    Ok(success) => success,
+                    Err(failure) => return Err(failure.to_fatal_error())
+                };
+
+                let r3 = match p3.parse(state) {
+                    Ok(success) => success,
+                    Err(failure) => return Err(failure.to_fatal_error())
+                };
+
+                let r4 = match p4.parse(state) {
+                    Ok(success) => success,
+                    Err(failure) => return Err(failure.to_fatal_error())
+                };
+
+                let r5 = match p5.parse(state) {
+                    Ok(success) => success,
+                    Err(failure) => return Err(failure.to_fatal_error())
+                };
 
                 let result = 
                     f(

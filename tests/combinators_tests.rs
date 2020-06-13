@@ -213,7 +213,7 @@ fn fails_parsing_with_tuple_2_at_first_parser() {
 
 #[test] 
 fn fails_parsing_with_tuple_2_at_second_parser() {
-    let expected = Err(ParserFailure::new("hello".to_string(), Some("world".to_string()), Severity::Error, Position::new(1, 4, 3)));
+    let expected = Err(ParserFailure::new("hello".to_string(), Some("world".to_string()), Severity::FatalError, Position::new(1, 4, 3)));
     let err_msg = "expected 'hello' but found 'world' at line 1, column 4".to_string();
 
     let actual =
@@ -258,7 +258,7 @@ fn fails_parsing_with_tuple_3_at_first_parser() {
 
 #[test] 
 fn fails_parsing_with_tuple_3_at_second_parser() {
-    let expected = Err(ParserFailure::new("integral value".to_string(), None, Severity::Error, Position::new(1, 6, 5)));
+    let expected = Err(ParserFailure::new("integral value".to_string(), None, Severity::FatalError, Position::new(1, 6, 5)));
     let err_msg = "expected 'integral value' but found unknown error at line 1, column 6".to_string();
 
     let actual =
@@ -274,7 +274,7 @@ fn fails_parsing_with_tuple_3_at_second_parser() {
 
 #[test] 
 fn fails_parsing_with_tuple_3_at_third_parser() {
-    let expected = Err(ParserFailure::new("true".to_string(), Some("fals".to_string()), Severity::Error, Position::new(1, 9, 8)));
+    let expected = Err(ParserFailure::new("true".to_string(), Some("fals".to_string()), Severity::FatalError, Position::new(1, 9, 8)));
     let err_msg = "expected 'true' but found 'fals' at line 1, column 9".to_string();
 
     let actual =
@@ -322,7 +322,7 @@ fn fails_parsing_with_tuple_4_at_first_parser() {
 
 #[test] 
 fn fails_parsing_with_tuple_4_at_second_parser() {
-    let expected = Err(ParserFailure::new("integral value".to_string(), None, Severity::Error, Position::new(1, 6, 5)));
+    let expected = Err(ParserFailure::new("integral value".to_string(), None, Severity::FatalError, Position::new(1, 6, 5)));
     let err_msg = "expected 'integral value' but found unknown error at line 1, column 6".to_string();
 
     let actual =
@@ -339,7 +339,7 @@ fn fails_parsing_with_tuple_4_at_second_parser() {
 
 #[test] 
 fn fails_parsing_with_tuple_4_at_third_parser() {
-    let expected = Err(ParserFailure::new("true".to_string(), Some("fals".to_string()), Severity::Error, Position::new(1, 9, 8)));
+    let expected = Err(ParserFailure::new("true".to_string(), Some("fals".to_string()), Severity::FatalError, Position::new(1, 9, 8)));
     let err_msg = "expected 'true' but found 'fals' at line 1, column 9".to_string();
 
     let actual =
@@ -356,7 +356,7 @@ fn fails_parsing_with_tuple_4_at_third_parser() {
 
 #[test] 
 fn fails_parsing_with_tuple_4_at_fourth_parser() {
-    let expected = Err(ParserFailure::new("floating point value".to_string(), None, Severity::Error, Position::new(1, 13, 12)));
+    let expected = Err(ParserFailure::new("floating point value".to_string(), None, Severity::FatalError, Position::new(1, 13, 12)));
     let err_msg = "expected 'floating point value' but found unknown error at line 1, column 13".to_string();
 
     let actual =
@@ -407,7 +407,7 @@ fn fails_parsing_with_tuple_5_at_first_parser() {
 
 #[test] 
 fn fails_parsing_with_tuple_5_at_second_parser() {
-    let expected = Err(ParserFailure::new("integral value".to_string(), None, Severity::Error, Position::new(1, 6, 5)));
+    let expected = Err(ParserFailure::new("integral value".to_string(), None, Severity::FatalError, Position::new(1, 6, 5)));
     let err_msg = "expected 'integral value' but found unknown error at line 1, column 6".to_string();
 
     let actual =
@@ -425,7 +425,7 @@ fn fails_parsing_with_tuple_5_at_second_parser() {
 
 #[test] 
 fn fails_parsing_with_tuple_5_at_third_parser() {
-    let expected = Err(ParserFailure::new("true".to_string(), Some("fals".to_string()), Severity::Error, Position::new(1, 9, 8)));
+    let expected = Err(ParserFailure::new("true".to_string(), Some("fals".to_string()), Severity::FatalError, Position::new(1, 9, 8)));
     let err_msg = "expected 'true' but found 'fals' at line 1, column 9".to_string();
 
     let actual =
@@ -442,7 +442,7 @@ fn fails_parsing_with_tuple_5_at_third_parser() {
 
 #[test] 
 fn fails_parsing_with_tuple_5_at_fourth_parser() {
-    let expected = Err(ParserFailure::new("floating point value".to_string(), None, Severity::Error, Position::new(1, 13, 12)));
+    let expected = Err(ParserFailure::new("floating point value".to_string(), None, Severity::FatalError, Position::new(1, 13, 12)));
     let err_msg = "expected 'floating point value' but found unknown error at line 1, column 13".to_string();
 
     let actual =
@@ -460,7 +460,7 @@ fn fails_parsing_with_tuple_5_at_fourth_parser() {
 
 #[test] 
 fn fails_parsing_with_tuple_5_at_fifth_parser() {
-    let expected = Err(ParserFailure::new("char satisfying the condition".to_string(), None, Severity::Error, Position::new(1, 16, 15)));
+    let expected = Err(ParserFailure::new("char satisfying the condition".to_string(), None, Severity::FatalError, Position::new(1, 16, 15)));
     let err_msg = "expected 'char satisfying the condition' but found unknown error at line 1, column 16".to_string();
     
     let actual =
