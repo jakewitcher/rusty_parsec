@@ -74,7 +74,12 @@ impl<T> Parser<T> {
             Box::new(
                 move |state: &mut ParserState| {
                     let prev = self.parse(state)?;
-                    let next = other.parse(state)?;
+                    let next = match other.parse(state) {
+                        Ok(success) => success,
+                        Err(err) => {
+                            return Err(err.with_severity(Severity::FatalError))
+                        }
+                    };
                     
                     Ok(prev.with_position(next.get_position()))
                 }
