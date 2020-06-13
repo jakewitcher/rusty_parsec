@@ -18,7 +18,7 @@ where T: 'static
             move |state: &mut ParserState| {
                 match state.get_remaining_input().chars().next() {
                     Some(c) if c == target => {
-                        state.move_input_state_forward(target.len_utf8());
+                        state.move_state_forward(target.len_utf8());
                         Ok(ParserSuccess::new(return_value, state.get_position()))
                     },
                     Some(c) => {
@@ -50,7 +50,7 @@ pub fn satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<char> {
             move |state: &mut ParserState| {
                 match state.get_remaining_input().chars().next() {
                     Some(c) if f(c) => {
-                        state.move_input_state_forward(c.len_utf8());
+                        state.move_state_forward(c.len_utf8());
                         Ok(ParserSuccess::new(c, state.get_position()))
                     },
                     _ => {
@@ -81,7 +81,7 @@ pub fn many_satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<String> {
                     }
                 }
                 let result = state.get_slice(count).unwrap_or(String::new());
-                state.move_input_state_forward(count);
+                state.move_state_forward(count);
                 Ok(ParserSuccess::new(result, state.get_position()))
             }
         );
@@ -105,7 +105,7 @@ where T: 'static
             move |state: &mut ParserState| {
                 match state.get_slice(target.len()) {
                     Some(s) if s == target => {
-                        state.move_input_state_forward(target.len());
+                        state.move_state_forward(target.len());
                         Ok(ParserSuccess::new(return_value, state.get_position()))
                     },
                     Some(s) => {
@@ -173,7 +173,7 @@ where T: PrimInt + 'static
 
                 match state.get_slice(count).map(|s| parse_num(s)) {
                     Some(Ok(int)) => {
-                        state.move_input_state_forward(count);
+                        state.move_state_forward(count);
                         Ok(ParserSuccess::new(int, state.get_position()))
                     },
                     _ =>
@@ -220,7 +220,7 @@ where T: Float + 'static
 
                 match state.get_slice(count).map(|s| parse_num(s)) {
                     Some(Ok(float)) if float.is_finite() => {
-                        state.move_input_state_forward(count);
+                        state.move_state_forward(count);
                         Ok(ParserSuccess::new(float, state.get_position()))
                     },
                     _ =>
@@ -251,7 +251,7 @@ pub fn ws() -> Parser<()> {
                     }
                 }
 
-                state.move_input_state_forward(count);
+                state.move_state_forward(count);
                 Ok(ParserSuccess::new((), state.get_position()))
             }
         );
