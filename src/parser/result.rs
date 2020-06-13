@@ -67,8 +67,12 @@ impl ParserFailure {
         ParserFailure { position, severity, expected, actual, }
     }
 
-    pub fn with_severity(self, severity: Severity) -> ParserFailure {
-        ParserFailure::new(self.expected, self.actual, severity, self.position)
+    pub fn to_error(self) -> ParserFailure {
+        ParserFailure::new(self.expected, self.actual, Severity::Error, self.position)
+    }
+
+    pub fn to_fatal_error(self) -> ParserFailure {
+        ParserFailure::new(self.expected, self.actual, Severity::FatalError, self.position)
     }
 
     pub fn is_fatal(&self) -> bool {

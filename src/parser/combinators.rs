@@ -175,7 +175,7 @@ where T: 'static
                     },
                     Err(failure) => {
                         state.revert();
-                        Err(failure.with_severity(Severity::Error))
+                        Err(failure.to_error())
                     },
                 }
             }
