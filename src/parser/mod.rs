@@ -51,8 +51,17 @@ impl<T> Parser<T> {
     {
         let parser_fn =
             Box::new(
-                move |state: &mut ParserState| 
-                    self.parse(state).or(other.parse(state))
+                move |state: &mut ParserState|
+                    match self.parse(state) {
+                        Ok(success) => Ok(success),
+                        Err(err) => {
+                            if err.is_fatal() {
+                                Err(err)
+                            } else {
+                                other.parse(state)
+                            }
+                        },
+                    }
             );
 
         Parser::new(parser_fn)

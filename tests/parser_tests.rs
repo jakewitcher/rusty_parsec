@@ -79,6 +79,20 @@ fn fails_parsing_with_or_at_second_parser() {
 }
 
 #[test]
+fn fails_parsing_with_or_at_second_parser_fatal_err() {
+    let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), Severity::FatalError, Position::new(1, 2, 1)));
+    let err_msg = "expected 'b' but found 'c' at line 1, column 2".to_string();
+
+    let actual = 
+        p_char('a').and(p_char('b'))
+            .or(p_char('c').and(p_char('d')))
+            .run("aca".to_string());
+
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
+}
+
+#[test]
 fn succeeds_parsing_with_take_prev() {
     let expected = Ok(ParserSuccess::new('a', Position::new(1, 3, 2)));
 

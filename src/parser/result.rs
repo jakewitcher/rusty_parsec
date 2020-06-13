@@ -71,6 +71,10 @@ impl ParserFailure {
         ParserFailure::new(self.expected, self.actual, severity, self.position)
     }
 
+    pub fn is_fatal(&self) -> bool {
+        self.severity == Severity::FatalError
+    }
+
     pub fn to_err_msg(&self) -> String {
         match &self.actual {
             Some(actual) => 
