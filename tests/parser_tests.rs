@@ -160,7 +160,7 @@ fn fails_parsing_with_take_next_at_first_parser() {
 
 #[test]
 fn fails_parsing_with_take_next_at_second_parser() {
-    let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), Severity::Error, Position::new(1, 2, 1)));
+    let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), Severity::FatalError, Position::new(1, 2, 1)));
     let err_msg = "expected 'b' but found 'c' at line 1, column 2".to_string();
 
     let actual = 
