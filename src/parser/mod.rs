@@ -212,7 +212,7 @@ impl<T> Parser<T> {
                             Err(ParserFailure::new(
                                 label,
                                 None,
-                                Severity::Error,
+                                Severity::FatalError,
                                 state.get_position()
                             ))
                         }
@@ -240,7 +240,7 @@ impl<T> Parser<T> {
                             Err(ParserFailure::new(
                                 label,
                                 None,
-                                Severity::Error,
+                                Severity::FatalError,
                                 state.get_position()
                             ))
                         },

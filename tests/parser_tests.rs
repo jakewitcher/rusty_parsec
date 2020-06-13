@@ -352,7 +352,7 @@ fn succeeds_parsing_with_followed_by() {
 
 #[test]
 fn fails_parsing_with_followed_by() {
-    let expected = Err(ParserFailure::new("following parser to succeed".to_string(), None, Severity::Error, Position::new(1, 7, 6)));
+    let expected = Err(ParserFailure::new("following parser to succeed".to_string(), None, Severity::FatalError, Position::new(1, 7, 6)));
     let err_msg = "expected 'following parser to succeed' but found unknown error at line 1, column 7".to_string();
 
     let p_helloworld =
@@ -386,7 +386,7 @@ fn succeeds_parsing_with_not_followed_by() {
 
 #[test]
 fn fails_parsing_with_not_followed_by() {
-    let expected = Err(ParserFailure::new("following parser to fail".to_string(), None, Severity::Error, Position::new(1, 7, 6)));
+    let expected = Err(ParserFailure::new("following parser to fail".to_string(), None, Severity::FatalError, Position::new(1, 7, 6)));
     let err_msg = "expected 'following parser to fail' but found unknown error at line 1, column 7".to_string();
 
     let p_helloworld =
