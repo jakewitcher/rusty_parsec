@@ -4,7 +4,7 @@ pub mod combinators;
 pub mod state;
 
 pub use state::ParserState;
-pub use result::{Position, ParserSuccess, ParserFailure, ParserResult};
+pub use result::{Position, ParserSuccess, ParserFailure, ParserResult, ErrStatus};
 
 pub type ParserFn <T> = Box<dyn FnOnce(&mut ParserState) -> ParserResult<T>>;
 
@@ -175,6 +175,7 @@ impl<T> Parser<T> {
                             Err(ParserFailure::new(
                                 label,
                                 None,
+                                ErrStatus::Error,
                                 state.get_position()
                             ))
                         }
@@ -202,6 +203,7 @@ impl<T> Parser<T> {
                             Err(ParserFailure::new(
                                 label,
                                 None,
+                                ErrStatus::Error,
                                 state.get_position()
                             ))
                         },

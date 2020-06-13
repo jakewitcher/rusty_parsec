@@ -14,7 +14,7 @@ fn succeeds_parsing_with_and() {
 
 #[test]
 fn fails_parsing_with_and_at_first_parser() {
-    let expected = Err(ParserFailure::new("a".to_string(), Some("b".to_string()), Position::new(1, 1, 0)));
+    let expected = Err(ParserFailure::new("a".to_string(), Some("b".to_string()), ErrStatus::Error, Position::new(1, 1, 0)));
     let err_msg = "expected 'a' but found 'b' at line 1, column 1".to_string();
 
     let actual = 
@@ -28,7 +28,7 @@ fn fails_parsing_with_and_at_first_parser() {
 
 #[test]
 fn fails_parsing_with_and_at_second_parser() {
-    let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), Position::new(1, 2, 1)));
+    let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), ErrStatus::Error, Position::new(1, 2, 1)));
     let err_msg = "expected 'b' but found 'c' at line 1, column 2".to_string();
 
     let actual = 
@@ -66,7 +66,7 @@ fn succeeds_parsing_with_or_at_second_parser() {
 
 #[test]
 fn fails_parsing_with_or_at_second_parser() {
-    let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), Position::new(1, 1, 0)));
+    let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), ErrStatus::Error, Position::new(1, 1, 0)));
     let err_msg = "expected 'b' but found 'c' at line 1, column 1".to_string();
 
     let actual = 
@@ -92,7 +92,7 @@ fn succeeds_parsing_with_take_prev() {
 
 #[test]
 fn fails_parsing_with_take_prev_at_first_parser() {
-    let expected = Err(ParserFailure::new("a".to_string(), Some("b".to_string()), Position::new(1, 1, 0)));
+    let expected = Err(ParserFailure::new("a".to_string(), Some("b".to_string()), ErrStatus::Error, Position::new(1, 1, 0)));
     let err_msg = "expected 'a' but found 'b' at line 1, column 1".to_string();
 
     let actual = 
@@ -106,7 +106,7 @@ fn fails_parsing_with_take_prev_at_first_parser() {
 
 #[test]
 fn fails_parsing_with_take_prev_at_second_parser() {
-    let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), Position::new(1, 2, 1)));
+    let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), ErrStatus::Error, Position::new(1, 2, 1)));
     let err_msg = "expected 'b' but found 'c' at line 1, column 2".to_string();
 
     let actual = 
@@ -132,7 +132,7 @@ fn succeeds_parsing_with_take_next() {
 
 #[test]
 fn fails_parsing_with_take_next_at_first_parser() {
-    let expected = Err(ParserFailure::new("a".to_string(), Some("b".to_string()), Position::new(1, 1, 0)));
+    let expected = Err(ParserFailure::new("a".to_string(), Some("b".to_string()), ErrStatus::Error, Position::new(1, 1, 0)));
     let err_msg = "expected 'a' but found 'b' at line 1, column 1".to_string();
 
     let actual = 
@@ -146,7 +146,7 @@ fn fails_parsing_with_take_next_at_first_parser() {
 
 #[test]
 fn fails_parsing_with_take_next_at_second_parser() {
-    let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), Position::new(1, 2, 1)));
+    let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), ErrStatus::Error, Position::new(1, 2, 1)));
     let err_msg = "expected 'b' but found 'c' at line 1, column 2".to_string();
 
     let actual = 
@@ -186,7 +186,7 @@ fn succeeds_parsing_with_then_return() {
 
 #[test]
 fn fails_parsing_with_then_return() {
-    let expected = Err(ParserFailure::new("true".to_string(), Some("blue".to_string()), Position::new(1, 1, 0)));
+    let expected = Err(ParserFailure::new("true".to_string(), Some("blue".to_string()), ErrStatus::Error, Position::new(1, 1, 0)));
     let err_msg = "expected 'true' but found 'blue' at line 1, column 1".to_string();
 
     let actual =
@@ -236,7 +236,7 @@ fn succeeds_parsing_with_between() {
 
 #[test] 
 fn fails_parsing_with_between_at_open() {
-    let expected = Err(ParserFailure::new("{".to_string(), Some("[".to_string()), Position::new(1, 1, 0)));
+    let expected = Err(ParserFailure::new("{".to_string(), Some("[".to_string()), ErrStatus::Error, Position::new(1, 1, 0)));
     let err_msg = "expected '{' but found '[' at line 1, column 1".to_string();
 
     let actual =
@@ -250,7 +250,7 @@ fn fails_parsing_with_between_at_open() {
 
 #[test] 
 fn fails_parsing_with_between_at_middle() {
-    let expected = Err(ParserFailure::new("hello".to_string(), Some("yello".to_string()), Position::new(1, 2, 1)));
+    let expected = Err(ParserFailure::new("hello".to_string(), Some("yello".to_string()), ErrStatus::Error, Position::new(1, 2, 1)));
     let err_msg = "expected 'hello' but found 'yello' at line 1, column 2".to_string();
 
     let actual =
@@ -264,7 +264,7 @@ fn fails_parsing_with_between_at_middle() {
 
 #[test] 
 fn fails_parsing_with_between_at_close() {
-    let expected = Err(ParserFailure::new("}".to_string(), Some("]".to_string()), Position::new(1, 7, 6)));
+    let expected = Err(ParserFailure::new("}".to_string(), Some("]".to_string()), ErrStatus::Error, Position::new(1, 7, 6)));
     let err_msg = "expected '}' but found ']' at line 1, column 7".to_string();
 
     let actual =
@@ -338,7 +338,7 @@ fn succeeds_parsing_with_followed_by() {
 
 #[test]
 fn fails_parsing_with_followed_by() {
-    let expected = Err(ParserFailure::new("following parser to succeed".to_string(), None, Position::new(1, 7, 6)));
+    let expected = Err(ParserFailure::new("following parser to succeed".to_string(), None, ErrStatus::Error, Position::new(1, 7, 6)));
     let err_msg = "expected 'following parser to succeed' but found unknown error at line 1, column 7".to_string();
 
     let p_helloworld =
@@ -372,7 +372,7 @@ fn succeeds_parsing_with_not_followed_by() {
 
 #[test]
 fn fails_parsing_with_not_followed_by() {
-    let expected = Err(ParserFailure::new("following parser to fail".to_string(), None, Position::new(1, 7, 6)));
+    let expected = Err(ParserFailure::new("following parser to fail".to_string(), None, ErrStatus::Error, Position::new(1, 7, 6)));
     let err_msg = "expected 'following parser to fail' but found unknown error at line 1, column 7".to_string();
 
     let p_helloworld =

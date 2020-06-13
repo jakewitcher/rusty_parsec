@@ -49,15 +49,22 @@ impl<T> ParserSuccess<T> {
 }
 
 #[derive(Debug, PartialEq)]
+pub enum ErrStatus {
+    Error,
+    FatalError
+}
+
+#[derive(Debug, PartialEq)]
 pub struct ParserFailure {
     expected: String,
     actual: Option<String>,
+    status: ErrStatus,
     position: Position,
 }
 
 impl ParserFailure {
-    pub fn new(expected: String, actual: Option<String>, position: Position) -> ParserFailure {
-        ParserFailure { position, expected, actual, }
+    pub fn new(expected: String, actual: Option<String>, status: ErrStatus, position: Position) -> ParserFailure {
+        ParserFailure { position, status, expected, actual, }
     }
 
     pub fn to_err_msg(&self) -> String {
