@@ -1,7 +1,7 @@
 use super::{ParserState, ParserSuccess, ParserFailure, Parser};
 
 pub fn many<T>(parser: fn() -> Parser<T>) -> Parser<Vec<T>> {
-    let parser =
+    let parser_fn =
         Box::new(
             move |state: &mut ParserState| {
                 let mut results: Vec<T> = Vec::new();
@@ -22,11 +22,11 @@ pub fn many<T>(parser: fn() -> Parser<T>) -> Parser<Vec<T>> {
             }
         );
 
-    Parser::new(parser)
+    Parser::new(parser_fn)
 }
 
 pub fn many_1<T>(parser: fn() -> Parser<T>) -> Parser<Vec<T>> {
-    let parser =
+    let parser_fn =
         Box::new(
             move |state: &mut ParserState| {
                 let mut results: Vec<T> = Vec::new();
@@ -55,13 +55,13 @@ pub fn many_1<T>(parser: fn() -> Parser<T>) -> Parser<Vec<T>> {
             }
         );
 
-    Parser::new(parser)
+    Parser::new(parser_fn)
 }
 
 pub fn sep_by<T, U>(parser: fn() -> Parser<T>, separator: fn() -> Parser<U>) -> Parser<Vec<T>> 
 where U: 'static
 {
-    let parser =
+    let parser_fn =
         Box::new(
             move |state: &mut ParserState| {
                 let mut results: Vec<T> = Vec::new();
@@ -86,13 +86,13 @@ where U: 'static
             }
         );
     
-    Parser::new(parser)
+    Parser::new(parser_fn)
 }
 
 pub fn sep_by_1<T, U>(parser: fn() -> Parser<T>, separator: fn() -> Parser<U>) -> Parser<Vec<T>> 
 where U: 'static
 {
-    let parser =
+    let parser_fn =
         Box::new(
             move |state: &mut ParserState| {
                 let mut results: Vec<T> = Vec::new();
@@ -125,7 +125,7 @@ where U: 'static
             }
         );
     
-    Parser::new(parser)
+    Parser::new(parser_fn)
 }
 
 pub fn choice<T>(parsers: Vec<Parser<T>>) -> Parser<T> {
@@ -133,7 +133,7 @@ pub fn choice<T>(parsers: Vec<Parser<T>>) -> Parser<T> {
 }
 
 pub fn choice_l<T>(parsers: Vec<Parser<T>>, label: String) -> Parser<T> {
-    let parser =
+    let parser_fn =
         Box::new(
             move |state: &mut ParserState| {
                 for p in parsers.into_iter() {
@@ -155,13 +155,36 @@ pub fn choice_l<T>(parsers: Vec<Parser<T>>, label: String) -> Parser<T> {
             }
         );
 
-    Parser::new(parser)
+    Parser::new(parser_fn)
+}
+
+pub fn attempt<T>(parser: Parser<T>) -> Parser<T>
+where T: 'static
+{
+    let parser_fn = 
+        Box::new(
+            move |state: &mut ParserState| {
+                state.mark();
+                match parser.parse(state) {
+                    Ok(success) => {
+                        state.remove_mark();
+                        Ok(success)
+                    },
+                    Err(failure) => {
+                        state.revert();
+                        Err(failure)
+                    },
+                }
+            }
+        );
+
+    Parser::new(parser_fn)
 }
 
 pub fn pipe_2<T, U, V>(p1: Parser<T>, p2: Parser<U>, f: Box<dyn Fn (T, U) -> V>) -> Parser<V> 
 where T: 'static, U: 'static
 {
-    let parser =
+    let parser_fn =
         Box::new(
             move |state: &mut ParserState| {
                 let r1 = p1.parse(state)?;
@@ -177,13 +200,13 @@ where T: 'static, U: 'static
             }
         );
 
-    Parser::new(parser)
+    Parser::new(parser_fn)
 }
 
 pub fn pipe_3<T, U, V, W>(p1: Parser<T>, p2: Parser<U>, p3: Parser<V>, f: Box<dyn Fn (T, U, V) -> W>) -> Parser<W> 
 where T: 'static, U: 'static, V: 'static
 {
-    let parser =
+    let parser_fn =
         Box::new(
             move |state: &mut ParserState| {
                 let r1 = p1.parse(state)?;
@@ -201,13 +224,13 @@ where T: 'static, U: 'static, V: 'static
             }
         );
 
-    Parser::new(parser)
+    Parser::new(parser_fn)
 }
 
 pub fn pipe_4<T, U, V, W, X>(p1: Parser<T>, p2: Parser<U>, p3: Parser<V>, p4: Parser<W>, f: Box<dyn Fn (T, U, V, W) -> X>) -> Parser<X> 
 where T: 'static, U: 'static, V: 'static, W: 'static
 {
-    let parser =
+    let parser_fn =
         Box::new(
             move |state: &mut ParserState| {
                 let r1 = p1.parse(state)?;
@@ -227,13 +250,13 @@ where T: 'static, U: 'static, V: 'static, W: 'static
             }
         );
 
-    Parser::new(parser)
+    Parser::new(parser_fn)
 }
 
 pub fn pipe_5<T, U, V, W, X, Y>(p1: Parser<T>, p2: Parser<U>, p3: Parser<V>, p4: Parser<W>, p5: Parser<X>, f: Box<dyn Fn (T, U, V, W, X) -> Y>) -> Parser<Y> 
 where T: 'static, U: 'static, V: 'static, W: 'static, X: 'static
 {
-    let parser =
+    let parser_fn =
         Box::new(
             move |state: &mut ParserState| {
                 let r1 = p1.parse(state)?;
@@ -255,7 +278,7 @@ where T: 'static, U: 'static, V: 'static, W: 'static, X: 'static
             }
         );
 
-    Parser::new(parser)
+    Parser::new(parser_fn)
 }
 
 pub fn tuple_2<T, U>(p1: Parser<T>, p2: Parser<U>) -> Parser<(T, U)> {

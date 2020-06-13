@@ -145,6 +145,30 @@ fn fails_parsing_with_sep_by_1() {
 }
 
 #[test]
+fn succeeds_parsing_with_attempt() {
+    let expected = Ok(ParserSuccess::new((123, "abc".to_string()), Position::new(1, 7, 6)));
+
+    let parser = p_u32().and(p_string("abc".to_string()));
+
+    let actual = attempt(parser).run("123abc".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_with_attempt() {
+    let expected = Err(ParserFailure::new("abc".to_string(), Some("def".to_string()), Position::new(1, 4, 3)));
+    let err_msg = "expected 'abc' but found 'def' at line 1, column 4".to_string();
+
+    let parser = p_u32().and(p_string("abc".to_string()));
+
+    let actual = attempt(parser).run("123def".to_string());
+
+    assert_eq!(expected, actual);
+    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
+}
+
+#[test]
 fn succeeds_parsing_with_tuple_2() {
     let expected = Ok(ParserSuccess::new((123, "hello".to_string()), Position::new(1, 9, 8)));
 

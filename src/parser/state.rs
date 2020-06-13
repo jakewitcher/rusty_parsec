@@ -128,13 +128,13 @@ impl ParserState {
                 while self.current_slice_start != marker {
                     self.move_input_state_back();
                 }
-                self.reset_marker();
+                self.remove_mark();
             },
             _ => ()
         }
     }
 
-    fn reset_marker(&mut self) {
+    pub fn remove_mark(&mut self) {
         self.marker = None;
     }
 
