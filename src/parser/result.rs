@@ -67,6 +67,10 @@ impl ParserFailure {
         ParserFailure { position, status, expected, actual, }
     }
 
+    pub fn with_status(self, status: ErrStatus) -> ParserFailure {
+        ParserFailure::new(self.expected, self.actual, status, self.position)
+    }
+
     pub fn to_err_msg(&self) -> String {
         match &self.actual {
             Some(actual) => 
