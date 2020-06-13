@@ -1,4 +1,4 @@
-use super::{ParserState, ParserSuccess, ParserFailure, Parser, ErrStatus};
+use super::{ParserState, ParserSuccess, ParserFailure, Parser, Severity};
 
 use num_traits::{Float, PrimInt};
 
@@ -25,7 +25,7 @@ where T: 'static
                         Err(ParserFailure::new(
                             target.to_string(),
                             Some(c.to_string()),
-                            ErrStatus::Error,
+                            Severity::Error,
                             state.get_position()
                         ))
                     },
@@ -33,7 +33,7 @@ where T: 'static
                         Err(ParserFailure::new(
                             target.to_string(),
                             None,
-                            ErrStatus::Error,
+                            Severity::Error,
                             state.get_position()
                         ))
                     },
@@ -57,7 +57,7 @@ pub fn satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<char> {
                         Err(ParserFailure::new(
                             "char satisfying the condition".to_string(),
                             None,
-                            ErrStatus::Error,
+                            Severity::Error,
                             state.get_position()
                         ))
                     },
@@ -112,7 +112,7 @@ where T: 'static
                         Err(ParserFailure::new(
                             target,
                             Some(s),
-                            ErrStatus::Error,
+                            Severity::Error,
                             state.get_position()
                         ))
                     },
@@ -120,7 +120,7 @@ where T: 'static
                         Err(ParserFailure::new(
                             target,
                             None,
-                            ErrStatus::Error,
+                            Severity::Error,
                             state.get_position()
                         ))
                     },
@@ -180,7 +180,7 @@ where T: PrimInt + 'static
                         Err(ParserFailure::new(
                             "integral value".to_string(),
                             None,
-                            ErrStatus::Error,
+                            Severity::Error,
                             state.get_position())
                         ),
                 }
@@ -227,7 +227,7 @@ where T: Float + 'static
                         Err(ParserFailure::new(
                             "floating point value".to_string(),
                             None,
-                            ErrStatus::Error,
+                            Severity::Error,
                             state.get_position())
                         ),
                 }

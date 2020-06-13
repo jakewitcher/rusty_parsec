@@ -4,7 +4,7 @@ pub mod combinators;
 pub mod state;
 
 pub use state::ParserState;
-pub use result::{Position, ParserSuccess, ParserFailure, ParserResult, ErrStatus};
+pub use result::{Position, ParserSuccess, ParserFailure, ParserResult, Severity};
 
 pub type ParserFn <T> = Box<dyn FnOnce(&mut ParserState) -> ParserResult<T>>;
 
@@ -31,7 +31,12 @@ impl<T> Parser<T> {
             Box::new(
                 move |state: &mut ParserState| {
                     let left = self.parse(state)?;
-                    let right = other.parse(state)?;
+                    let right = match other.parse(state) {
+                        Ok(success) => success,
+                        Err(err) => {
+                            return Err(err.with_severity(Severity::FatalError))
+                        }
+                    };
 
                     let result = (left.get_result(), right.get_result());
 
@@ -175,7 +180,7 @@ impl<T> Parser<T> {
                             Err(ParserFailure::new(
                                 label,
                                 None,
-                                ErrStatus::Error,
+                                Severity::Error,
                                 state.get_position()
                             ))
                         }
@@ -203,7 +208,7 @@ impl<T> Parser<T> {
                             Err(ParserFailure::new(
                                 label,
                                 None,
-                                ErrStatus::Error,
+                                Severity::Error,
                                 state.get_position()
                             ))
                         },
