@@ -31,6 +31,7 @@ impl<T> Parser<T> {
             Box::new(
                 move |state: &mut ParserState| {
                     let left = self.parse(state)?;
+                    
                     let right = match other.parse(state) {
                         Ok(success) => success,
                         Err(err) => {
@@ -74,6 +75,7 @@ impl<T> Parser<T> {
             Box::new(
                 move |state: &mut ParserState| {
                     let prev = self.parse(state)?;
+
                     let next = match other.parse(state) {
                         Ok(success) => success,
                         Err(err) => {
@@ -140,8 +142,16 @@ impl<T> Parser<T> {
             Box::new(
                 move |state: &mut ParserState| {
                     p_open.parse(state)?;
-                    let result = self.parse(state)?;
-                    let close = p_close.parse(state)?;
+
+                    let result = match self.parse(state) {
+                        Ok(success) => success,
+                        Err(err) => return Err(err.with_severity(Severity::FatalError))
+                    };
+
+                    let close = match p_close.parse(state) {
+                        Ok(success) => success,
+                        Err(err) => return Err(err.with_severity(Severity::FatalError))
+                    };
 
                     Ok(result.with_position(close.get_position()))
                 }

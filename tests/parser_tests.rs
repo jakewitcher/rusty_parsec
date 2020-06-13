@@ -264,7 +264,7 @@ fn fails_parsing_with_between_at_open() {
 
 #[test] 
 fn fails_parsing_with_between_at_middle() {
-    let expected = Err(ParserFailure::new("hello".to_string(), Some("yello".to_string()), Severity::Error, Position::new(1, 2, 1)));
+    let expected = Err(ParserFailure::new("hello".to_string(), Some("yello".to_string()), Severity::FatalError, Position::new(1, 2, 1)));
     let err_msg = "expected 'hello' but found 'yello' at line 1, column 2".to_string();
 
     let actual =
@@ -278,7 +278,7 @@ fn fails_parsing_with_between_at_middle() {
 
 #[test] 
 fn fails_parsing_with_between_at_close() {
-    let expected = Err(ParserFailure::new("}".to_string(), Some("]".to_string()), Severity::Error, Position::new(1, 7, 6)));
+    let expected = Err(ParserFailure::new("}".to_string(), Some("]".to_string()), Severity::FatalError, Position::new(1, 7, 6)));
     let err_msg = "expected '}' but found ']' at line 1, column 7".to_string();
 
     let actual =
