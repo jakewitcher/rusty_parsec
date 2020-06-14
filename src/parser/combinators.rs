@@ -176,7 +176,8 @@ where T: 'static
                     },
                     Err(failure) => {
                         state.revert();
-                        Err(failure.to_error())
+                        state.remove_mark();
+                        Err(failure.to_err())
                     },
                 }
             }
@@ -195,7 +196,7 @@ where T: 'static, U: 'static
 
                 let r2 = match p2.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_error())
+                    Err(failure) => return Err(failure.to_fatal_err())
                 };
 
                 let result = 
@@ -221,12 +222,12 @@ where T: 'static, U: 'static, V: 'static
 
                 let r2 = match p2.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_error())
+                    Err(failure) => return Err(failure.to_fatal_err())
                 };
                 
                 let r3 = match p3.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_error())
+                    Err(failure) => return Err(failure.to_fatal_err())
                 };
 
                 let result = 
@@ -253,17 +254,17 @@ where T: 'static, U: 'static, V: 'static, W: 'static
                 
                 let r2 = match p2.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_error())
+                    Err(failure) => return Err(failure.to_fatal_err())
                 };
 
                 let r3 = match p3.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_error())
+                    Err(failure) => return Err(failure.to_fatal_err())
                 };
 
                 let r4 = match p4.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_error())
+                    Err(failure) => return Err(failure.to_fatal_err())
                 };
 
                 let result = 
@@ -291,22 +292,22 @@ where T: 'static, U: 'static, V: 'static, W: 'static, X: 'static
                 
                 let r2 = match p2.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_error())
+                    Err(failure) => return Err(failure.to_fatal_err())
                 };
 
                 let r3 = match p3.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_error())
+                    Err(failure) => return Err(failure.to_fatal_err())
                 };
 
                 let r4 = match p4.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_error())
+                    Err(failure) => return Err(failure.to_fatal_err())
                 };
 
                 let r5 = match p5.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_error())
+                    Err(failure) => return Err(failure.to_fatal_err())
                 };
 
                 let result = 

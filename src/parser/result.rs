@@ -1,6 +1,8 @@
 pub use success::ParserSuccess;
 pub use failure::{ParserFailure, FailureSeverity};
 
+pub type ParserResult<T> = Result<ParserSuccess<T>, ParserFailure>;
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Position {
     line: usize,
@@ -81,11 +83,11 @@ pub mod failure {
             ParserFailure { position, severity: FailureSeverity::FatalError, expected, actual, }
         }
     
-        pub fn to_error(self) -> ParserFailure {
+        pub fn to_err(self) -> ParserFailure {
             ParserFailure::new_err(self.expected, self.actual, self.position)
         }
     
-        pub fn to_fatal_error(self) -> ParserFailure {
+        pub fn to_fatal_err(self) -> ParserFailure {
             ParserFailure::new_fatal_err(self.expected, self.actual, self.position)
         }
     
@@ -114,8 +116,6 @@ pub mod failure {
         }
     }
 }
-
-pub type ParserResult<T> = Result<ParserSuccess<T>, ParserFailure>;
 
 #[cfg(test)]
 mod tests {

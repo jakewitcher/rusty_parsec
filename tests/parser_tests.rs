@@ -121,6 +121,42 @@ fn fails_parsing_with_take_prev_at_second_parser() {
 }
 
 #[test]
+fn succeeds_parsing_with_try_take_prev() {
+    let expected = Ok(ParserSuccess::new('a', Position::new(1, 3, 2)));
+
+    let actual = 
+        p_char('a')
+            .try_take_prev(p_char('b'))
+            .run("abc".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_with_try_take_prev() {
+    let expected = Err(ParserFailure::new_err("b".to_string(), Some("c".to_string()), Position::new(1, 2, 1)));
+
+    let actual = 
+        p_char('a')
+            .try_take_prev(p_char('b'))
+            .run("acb".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_with_try_take_prev_fatal_err() {
+    let expected = Err(ParserFailure::new_fatal_err("c".to_string(), Some("d".to_string()), Position::new(1, 3, 2)));
+
+    let actual = 
+        p_char('a')
+            .try_take_prev(p_char('b').and(p_char('c')))
+            .run("abd".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
 fn succeeds_parsing_with_take_next() {
     let expected = Ok(ParserSuccess::new('b', Position::new(1, 3, 2)));
 
@@ -152,6 +188,42 @@ fn fails_parsing_with_take_next_at_second_parser() {
         p_char('a')
             .take_next(p_char('b'))
             .run("acb".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn succeeds_parsing_with_try_take_next() {
+    let expected = Ok(ParserSuccess::new('b', Position::new(1, 3, 2)));
+
+    let actual = 
+        p_char('a')
+            .try_take_next(p_char('b'))
+            .run("abc".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_with_try_take_next() {
+    let expected = Err(ParserFailure::new_err("b".to_string(), Some("c".to_string()), Position::new(1, 2, 1)));
+
+    let actual = 
+        p_char('a')
+            .try_take_next(p_char('b'))
+            .run("acb".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_with_try_take_next_fatal_err() {
+    let expected = Err(ParserFailure::new_fatal_err("c".to_string(), Some("d".to_string()), Position::new(1, 3, 2)));
+
+    let actual = 
+        p_char('a')
+            .try_take_next(p_char('b').and(p_char('c')))
+            .run("abd".to_string());
 
     assert_eq!(expected, actual);
 }
