@@ -14,7 +14,7 @@ pub fn many<T>(parser: fn() -> Parser<T>) -> Parser<Vec<T>> {
                         },
                         Err(_) => {
                             parser_succeeds = false;
-                        }
+                        },
                     }
                 }
 
@@ -39,7 +39,7 @@ pub fn many_1<T>(parser: fn() -> Parser<T>) -> Parser<Vec<T>> {
                         },
                         Err(_) => {
                             parser_succeeds = false;
-                        }
+                        },
                     }
                 }
 
@@ -78,7 +78,7 @@ where U: 'static
                         },
                         Err(_) => {
                             parser_succeeds = false;
-                        }
+                        },
                     }
                 }
 
@@ -109,7 +109,7 @@ where U: 'static
                         },
                         Err(_) => {
                             parser_succeeds = false;
-                        }
+                        },
                     }
                 }
 
@@ -147,7 +147,7 @@ pub fn choice_l<T>(parsers: Vec<Parser<T>>, label: String) -> Parser<T> {
                             }
 
                             continue;
-                        }
+                        },
                     } 
                 }
 
@@ -195,7 +195,7 @@ where T: 'static, U: 'static
 
                 let r2 = match p2.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err())
+                    Err(failure) => return Err(failure.to_fatal_err()),
                 };
 
                 let result = 
@@ -221,12 +221,12 @@ where T: 'static, U: 'static, V: 'static
 
                 let r2 = match p2.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err())
+                    Err(failure) => return Err(failure.to_fatal_err()),
                 };
                 
                 let r3 = match p3.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err())
+                    Err(failure) => return Err(failure.to_fatal_err()),
                 };
 
                 let result = 
@@ -253,17 +253,17 @@ where T: 'static, U: 'static, V: 'static, W: 'static
                 
                 let r2 = match p2.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err())
+                    Err(failure) => return Err(failure.to_fatal_err()),
                 };
 
                 let r3 = match p3.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err())
+                    Err(failure) => return Err(failure.to_fatal_err()),
                 };
 
                 let r4 = match p4.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err())
+                    Err(failure) => return Err(failure.to_fatal_err()),
                 };
 
                 let result = 
@@ -291,22 +291,22 @@ where T: 'static, U: 'static, V: 'static, W: 'static, X: 'static
                 
                 let r2 = match p2.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err())
+                    Err(failure) => return Err(failure.to_fatal_err()),
                 };
 
                 let r3 = match p3.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err())
+                    Err(failure) => return Err(failure.to_fatal_err()),
                 };
 
                 let r4 = match p4.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err())
+                    Err(failure) => return Err(failure.to_fatal_err()),
                 };
 
                 let r5 = match p5.parse(state) {
                     Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err())
+                    Err(failure) => return Err(failure.to_fatal_err()),
                 };
 
                 let result = 

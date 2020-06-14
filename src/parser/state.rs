@@ -67,7 +67,7 @@ impl ParserState {
         let current_slice = 
             self.get_slice(increment).unwrap_or_default();
 
-        let chars: Vec<char> = current_slice.chars().collect();
+        let chars = current_slice.chars();
         let mut char_index = 0;
 
         for c in chars {
@@ -114,7 +114,7 @@ impl ParserState {
     fn line_start_is_greater_than_slice_start(line_start: Option<&LineStart>, slice_start: usize) -> bool {
         match line_start {
             Some(LineStart::Index(i)) => *i > slice_start,
-            _ => false
+            _ => false,
         }
     }
 

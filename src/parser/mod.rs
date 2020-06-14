@@ -36,7 +36,7 @@ impl<T> Parser<T> {
                         Ok(success) => success,
                         Err(failure) => {
                             return Err(failure.to_fatal_err())
-                        }
+                        },
                     };
 
                     let result = (left.get_result(), right.get_result());
@@ -80,7 +80,7 @@ impl<T> Parser<T> {
                         Ok(success) => success,
                         Err(failure) => {
                             return Err(failure.to_fatal_err())
-                        }
+                        },
                     };
                     
                     Ok(prev.with_position(next.get_position()))
@@ -103,23 +103,24 @@ impl<T> Parser<T> {
                         Err(failure) => {
                             state.remove_mark();
                             return Err(failure)
-                        }
+                        },
                     };
 
-                    let next = match other.parse(state) {
-                        Ok(success) => success,
+                    let result = match other.parse(state) {
+                        Ok(success) => {
+                            Ok(prev.with_position(success.get_position()))
+                        },
                         Err(failure) => {
-                            if failure.is_fatal() {
-                                state.remove_mark();
-                                return Err(failure)
-                            } else {
+                            if !(failure.is_fatal()) {
                                 state.revert();
-                                return Err(failure)
                             }
-                        }
+
+                            Err(failure)
+                        },
                     };
                     
-                    Ok(prev.with_position(next.get_position()))
+                    state.remove_mark();
+                    result
                 }
             );
 
@@ -136,7 +137,7 @@ impl<T> Parser<T> {
                         Ok(_) => {
                             match other.parse(state) {
                                 Ok(success) => Ok(success),
-                                Err(failure) => Err(failure.to_fatal_err())
+                                Err(failure) => Err(failure.to_fatal_err()),
                             }
                         },
                         Err(failure) => Err(failure),
@@ -154,26 +155,24 @@ impl<T> Parser<T> {
                 move |state: &mut ParserState| {
                     state.mark();
 
-                    match self.parse(state) {
+                    let result = match self.parse(state) {
                         Ok(_) => {
                             match other.parse(state) {
-                                Ok(success) => {
-                                    state.remove_mark();
-                                    Ok(success)
-                                },
+                                Ok(success) => Ok(success),
                                 Err(failure) => {
-                                    if failure.is_fatal() {
-                                        state.remove_mark();
-                                        Err(failure)
-                                    } else {
+                                    if !(failure.is_fatal()) {
                                         state.revert();
-                                        Err(failure)
                                     }
+
+                                    Err(failure)
                                 },
                             }
                         },
                         Err(failure) => Err(failure),
-                    }
+                    };
+
+                    state.remove_mark();
+                    result
                 }
             );
 
@@ -215,12 +214,12 @@ impl<T> Parser<T> {
 
                     let result = match self.parse(state) {
                         Ok(success) => success,
-                        Err(failure) => return Err(failure.to_fatal_err())
+                        Err(failure) => return Err(failure.to_fatal_err()),
                     };
 
                     let close = match p_close.parse(state) {
                         Ok(success) => success,
-                        Err(failure) => return Err(failure.to_fatal_err())
+                        Err(failure) => return Err(failure.to_fatal_err()),
                     };
 
                     Ok(result.with_position(close.get_position()))
@@ -284,7 +283,7 @@ impl<T> Parser<T> {
                                 None,
                                 state.get_position()
                             ))
-                        }
+                        },
                     }
                 }
             );
@@ -315,7 +314,7 @@ impl<T> Parser<T> {
                         _ => {
                             state.revert();
                             Ok(ParserSuccess::new(result.get_result(), state.get_position()))
-                        }
+                        },
                     }
                 }
             );
