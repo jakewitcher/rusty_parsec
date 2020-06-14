@@ -12,14 +12,12 @@ fn succeeds_parsing_with_p_char() {
 
 #[test]
 fn fails_parsing_with_p_char() {
-    let expected = Err(ParserFailure::new("b".to_string(), Some("a".to_string()), Severity::Error, Position::new(1, 1, 0)));
-    let err_msg = "expected 'b' but found 'a' at line 1, column 1".to_string();
+    let expected = Err(ParserFailure::new_err("b".to_string(), Some("a".to_string()), Position::new(1, 1, 0)));
     
     let actual = 
         p_char('b').run("abc".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
@@ -35,28 +33,24 @@ fn succeeds_parsing_with_p_string() {
 
 #[test]
 fn fails_parsing_with_p_string() {
-    let expected = Err(ParserFailure::new("hello".to_string(), Some("chell".to_string()), Severity::Error, Position::new(1, 1, 0)));
-    let err_msg = "expected 'hello' but found 'chell' at line 1, column 1".to_string();
+    let expected = Err(ParserFailure::new_err("hello".to_string(), Some("chell".to_string()), Position::new(1, 1, 0)));
         
     let actual = 
         p_string("hello".to_string())
             .run("chello, world".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
 fn fails_parsing_with_p_string_when_input_is_too_short() {
-    let expected = Err(ParserFailure::new("hello".to_string(), None, Severity::Error, Position::new(1, 1, 0)));
-    let err_msg = "expected 'hello' but found unknown error at line 1, column 1".to_string();
+    let expected = Err(ParserFailure::new_err("hello".to_string(), None, Position::new(1, 1, 0)));
         
     let actual = 
         p_string("hello".to_string())
             .run("hell".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
@@ -98,8 +92,7 @@ fn succeeds_parsing_whitespace_with_ws() {
 
 #[test]
 fn fails_parsing_whitespace_with_ws() {
-    let expected = Err(ParserFailure::new("b".to_string(), Some("c".to_string()), Severity::FatalError, Position::new(3, 1, 9)));
-    let err_msg = "expected 'b' but found 'c' at line 3, column 1".to_string();
+    let expected = Err(ParserFailure::new_fatal_err("b".to_string(), Some("c".to_string()), Position::new(3, 1, 9)));
 
     let actual = 
         ws().take_next(p_char('a'))
@@ -108,7 +101,6 @@ fn fails_parsing_whitespace_with_ws() {
             .run("  \na\t  \r\nc".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
@@ -133,26 +125,22 @@ fn succeeds_parsing_negative_integer_with_p_i32() {
 
 #[test]
 fn fails_parsing_with_p_i32() {
-    let expected = Err(ParserFailure::new("integral value".to_string(), None, Severity::Error, Position::new(1, 1, 0)));
-    let err_msg = "expected 'integral value' but found unknown error at line 1, column 1".to_string();
+    let expected = Err(ParserFailure::new_err("integral value".to_string(), None, Position::new(1, 1, 0)));
 
     let actual =
         p_i32().run("abc".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
 fn fails_parsing_with_p_i32_integer_greater_than_i32_max() {
-    let expected = Err(ParserFailure::new("integral value".to_string(), None, Severity::Error, Position::new(1, 1, 0)));
-    let err_msg = "expected 'integral value' but found unknown error at line 1, column 1".to_string();
+    let expected = Err(ParserFailure::new_err("integral value".to_string(), None, Position::new(1, 1, 0)));
 
     let actual =
         p_i32().run("2147483900".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
@@ -220,26 +208,22 @@ fn succeeds_parsing_negative_integer_with_p_f32() {
 
 #[test]
 fn fails_parsing_with_p_f32() {
-    let expected = Err(ParserFailure::new("floating point value".to_string(), None, Severity::Error, Position::new(1, 1, 0)));
-    let err_msg = "expected 'floating point value' but found unknown error at line 1, column 1".to_string();
+    let expected = Err(ParserFailure::new_err("floating point value".to_string(), None, Position::new(1, 1, 0)));
 
     let actual =
         p_f32().run("abc".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
 fn fails_parsing_with_p_f32_integer_greater_than_i32_max() {
-    let expected = Err(ParserFailure::new("floating point value".to_string(), None, Severity::Error, Position::new(1, 1, 0)));
-    let err_msg = "expected 'floating point value' but found unknown error at line 1, column 1".to_string();
+    let expected = Err(ParserFailure::new_err("floating point value".to_string(), None, Position::new(1, 1, 0)));
 
     let actual =
         p_f32().run("340282500000000000000000000000000000000".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
@@ -265,15 +249,13 @@ fn succeeds_parsing_with_satisfy() {
 
 #[test]
 fn fails_parsing_with_satisfy() {
-    let expected = Err(ParserFailure::new("char satisfying the condition".to_string(), None, Severity::Error, Position::new(1, 1, 0)));
-    let err_msg = "expected 'char satisfying the condition' but found unknown error at line 1, column 1".to_string();
+    let expected = Err(ParserFailure::new_err("char satisfying the condition".to_string(), None, Position::new(1, 1, 0)));
 
     let actual =
         satisfy(Box::new(|c:char|c.is_ascii_lowercase()))
             .run("Cat".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]

@@ -51,13 +51,11 @@ fn succeeds_parsing_with_many_1() {
 
 #[test]
 fn fails_parsing_with_many_1() {
-    let expected = Err(ParserFailure::new("value satisfying parser at least once".to_string(), None, Severity::Error, Position::new(1, 1, 0)));
-    let err_msg = "expected 'value satisfying parser at least once' but found unknown error at line 1, column 1".to_string();
+    let expected = Err(ParserFailure::new_err("value satisfying parser at least once".to_string(), None, Position::new(1, 1, 0)));
 
     let actual = many_1(p_hello).run("worldworldworld".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
@@ -76,8 +74,7 @@ fn succeeds_parsing_with_choice() {
 
 #[test]
 fn fails_parsing_with_choice() {
-    let expected = Err(ParserFailure::new("value satisfying choice".to_string(), None, Severity::Error, Position::new(1, 1, 0)));
-    let err_msg = "expected 'value satisfying choice' but found unknown error at line 1, column 1".to_string();
+    let expected = Err(ParserFailure::new_err("value satisfying choice".to_string(), None, Position::new(1, 1, 0)));
 
     let actual = 
         choice(vec![
@@ -87,13 +84,11 @@ fn fails_parsing_with_choice() {
         ]).run("world".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
 fn fails_parsing_with_choice_fatal_err() {
-    let expected = Err(ParserFailure::new("e".to_string(), Some("f".to_string()), Severity::FatalError, Position::new(1, 2, 1)));
-    let err_msg = "expected 'e' but found 'f' at line 1, column 2".to_string();
+    let expected = Err(ParserFailure::new_fatal_err("e".to_string(), Some("f".to_string()), Position::new(1, 2, 1)));
 
     let actual =
         choice(vec![
@@ -102,7 +97,6 @@ fn fails_parsing_with_choice_fatal_err() {
         ]).run("df".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
@@ -146,8 +140,7 @@ fn succeeds_parsing_with_sep_by_1() {
 
 #[test]
 fn fails_parsing_with_sep_by_1() {
-    let expected = Err(ParserFailure::new("value satisfying parser at least once".to_string(), None, Severity::Error, Position::new(1, 1, 0)));
-    let err_msg = "expected 'value satisfying parser at least once' but found unknown error at line 1, column 1".to_string();
+    let expected = Err(ParserFailure::new_err("value satisfying parser at least once".to_string(), None, Position::new(1, 1, 0)));
 
     let actual =
         sep_by_1(
@@ -156,7 +149,6 @@ fn fails_parsing_with_sep_by_1() {
         ).run("a;b;c".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
@@ -172,15 +164,13 @@ fn succeeds_parsing_with_attempt() {
 
 #[test]
 fn fails_parsing_with_attempt() {
-    let expected = Err(ParserFailure::new("abc".to_string(), Some("def".to_string()), Severity::Error, Position::new(1, 4, 3)));
-    let err_msg = "expected 'abc' but found 'def' at line 1, column 4".to_string();
+    let expected = Err(ParserFailure::new_err("abc".to_string(), Some("def".to_string()), Position::new(1, 4, 3)));
 
     let parser = p_u32().and(p_string("abc".to_string()));
 
     let actual = attempt(parser).run("123def".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
@@ -198,8 +188,7 @@ fn succeeds_parsing_with_tuple_2() {
 
 #[test] 
 fn fails_parsing_with_tuple_2_at_first_parser() {
-    let expected = Err(ParserFailure::new("integral value".to_string(), None, Severity::Error, Position::new(1, 1, 0)));
-    let err_msg = "expected 'integral value' but found unknown error at line 1, column 1".to_string();
+    let expected = Err(ParserFailure::new_err("integral value".to_string(), None, Position::new(1, 1, 0)));
 
     let actual =
         tuple_2(
@@ -208,13 +197,11 @@ fn fails_parsing_with_tuple_2_at_first_parser() {
         ).run("hello123".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test] 
 fn fails_parsing_with_tuple_2_at_second_parser() {
-    let expected = Err(ParserFailure::new("hello".to_string(), Some("world".to_string()), Severity::FatalError, Position::new(1, 4, 3)));
-    let err_msg = "expected 'hello' but found 'world' at line 1, column 4".to_string();
+    let expected = Err(ParserFailure::new_fatal_err("hello".to_string(), Some("world".to_string()), Position::new(1, 4, 3)));
 
     let actual =
         tuple_2(
@@ -223,7 +210,6 @@ fn fails_parsing_with_tuple_2_at_second_parser() {
         ).run("123world".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
@@ -242,8 +228,7 @@ fn succeeds_parsing_with_tuple_3() {
 
 #[test] 
 fn fails_parsing_with_tuple_3_at_first_parser() {
-    let expected = Err(ParserFailure::new("hello".to_string(), Some("world".to_string()), Severity::Error, Position::new(1, 1, 0)));
-    let err_msg = "expected 'hello' but found 'world' at line 1, column 1".to_string();
+    let expected = Err(ParserFailure::new_err("hello".to_string(), Some("world".to_string()), Position::new(1, 1, 0)));
 
     let actual =
         tuple_3(
@@ -253,13 +238,11 @@ fn fails_parsing_with_tuple_3_at_first_parser() {
         ).run("world123true".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test] 
 fn fails_parsing_with_tuple_3_at_second_parser() {
-    let expected = Err(ParserFailure::new("integral value".to_string(), None, Severity::FatalError, Position::new(1, 6, 5)));
-    let err_msg = "expected 'integral value' but found unknown error at line 1, column 6".to_string();
+    let expected = Err(ParserFailure::new_fatal_err("integral value".to_string(), None, Position::new(1, 6, 5)));
 
     let actual =
         tuple_3(
@@ -269,13 +252,11 @@ fn fails_parsing_with_tuple_3_at_second_parser() {
         ).run("helloabctrue".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test] 
 fn fails_parsing_with_tuple_3_at_third_parser() {
-    let expected = Err(ParserFailure::new("true".to_string(), Some("fals".to_string()), Severity::FatalError, Position::new(1, 9, 8)));
-    let err_msg = "expected 'true' but found 'fals' at line 1, column 9".to_string();
+    let expected = Err(ParserFailure::new_fatal_err("true".to_string(), Some("fals".to_string()), Position::new(1, 9, 8)));
 
     let actual =
         tuple_3(
@@ -285,7 +266,6 @@ fn fails_parsing_with_tuple_3_at_third_parser() {
         ).run("hello123false".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
@@ -305,8 +285,7 @@ fn succeeds_parsing_with_tuple_4() {
 
 #[test] 
 fn fails_parsing_with_tuple_4_at_first_parser() {
-    let expected = Err(ParserFailure::new("hello".to_string(), Some("world".to_string()), Severity::Error, Position::new(1, 1, 0)));
-    let err_msg = "expected 'hello' but found 'world' at line 1, column 1".to_string();
+    let expected = Err(ParserFailure::new_err("hello".to_string(), Some("world".to_string()), Position::new(1, 1, 0)));
 
     let actual =
         tuple_4(
@@ -317,13 +296,11 @@ fn fails_parsing_with_tuple_4_at_first_parser() {
         ).run("world123true1.5".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test] 
 fn fails_parsing_with_tuple_4_at_second_parser() {
-    let expected = Err(ParserFailure::new("integral value".to_string(), None, Severity::FatalError, Position::new(1, 6, 5)));
-    let err_msg = "expected 'integral value' but found unknown error at line 1, column 6".to_string();
+    let expected = Err(ParserFailure::new_fatal_err("integral value".to_string(), None, Position::new(1, 6, 5)));
 
     let actual =
         tuple_4(
@@ -334,13 +311,11 @@ fn fails_parsing_with_tuple_4_at_second_parser() {
         ).run("helloabctrue1.5".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test] 
 fn fails_parsing_with_tuple_4_at_third_parser() {
-    let expected = Err(ParserFailure::new("true".to_string(), Some("fals".to_string()), Severity::FatalError, Position::new(1, 9, 8)));
-    let err_msg = "expected 'true' but found 'fals' at line 1, column 9".to_string();
+    let expected = Err(ParserFailure::new_fatal_err("true".to_string(), Some("fals".to_string()), Position::new(1, 9, 8)));
 
     let actual =
         tuple_4(
@@ -351,13 +326,11 @@ fn fails_parsing_with_tuple_4_at_third_parser() {
         ).run("hello123false1.5".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test] 
 fn fails_parsing_with_tuple_4_at_fourth_parser() {
-    let expected = Err(ParserFailure::new("floating point value".to_string(), None, Severity::FatalError, Position::new(1, 13, 12)));
-    let err_msg = "expected 'floating point value' but found unknown error at line 1, column 13".to_string();
+    let expected = Err(ParserFailure::new_fatal_err("floating point value".to_string(), None, Position::new(1, 13, 12)));
 
     let actual =
         tuple_4(
@@ -368,7 +341,6 @@ fn fails_parsing_with_tuple_4_at_fourth_parser() {
         ).run("hello123trueabc".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test]
@@ -389,8 +361,7 @@ fn succeeds_parsing_with_tuple_5() {
 
 #[test] 
 fn fails_parsing_with_tuple_5_at_first_parser() {
-    let expected = Err(ParserFailure::new("hello".to_string(), Some("world".to_string()), Severity::Error, Position::new(1, 1, 0)));
-    let err_msg = "expected 'hello' but found 'world' at line 1, column 1".to_string();
+    let expected = Err(ParserFailure::new_err("hello".to_string(), Some("world".to_string()), Position::new(1, 1, 0)));
 
     let actual =
         tuple_5(
@@ -402,13 +373,11 @@ fn fails_parsing_with_tuple_5_at_first_parser() {
         ).run("world123true1.5a".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test] 
 fn fails_parsing_with_tuple_5_at_second_parser() {
-    let expected = Err(ParserFailure::new("integral value".to_string(), None, Severity::FatalError, Position::new(1, 6, 5)));
-    let err_msg = "expected 'integral value' but found unknown error at line 1, column 6".to_string();
+    let expected = Err(ParserFailure::new_fatal_err("integral value".to_string(), None, Position::new(1, 6, 5)));
 
     let actual =
         tuple_5(
@@ -420,13 +389,11 @@ fn fails_parsing_with_tuple_5_at_second_parser() {
         ).run("helloabctrue1.5a".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test] 
 fn fails_parsing_with_tuple_5_at_third_parser() {
-    let expected = Err(ParserFailure::new("true".to_string(), Some("fals".to_string()), Severity::FatalError, Position::new(1, 9, 8)));
-    let err_msg = "expected 'true' but found 'fals' at line 1, column 9".to_string();
+    let expected = Err(ParserFailure::new_fatal_err("true".to_string(), Some("fals".to_string()), Position::new(1, 9, 8)));
 
     let actual =
         tuple_5(
@@ -437,13 +404,11 @@ fn fails_parsing_with_tuple_5_at_third_parser() {
         ).run("hello123false1.5a".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test] 
 fn fails_parsing_with_tuple_5_at_fourth_parser() {
-    let expected = Err(ParserFailure::new("floating point value".to_string(), None, Severity::FatalError, Position::new(1, 13, 12)));
-    let err_msg = "expected 'floating point value' but found unknown error at line 1, column 13".to_string();
+    let expected = Err(ParserFailure::new_fatal_err("floating point value".to_string(), None, Position::new(1, 13, 12)));
 
     let actual =
         tuple_5(
@@ -455,13 +420,11 @@ fn fails_parsing_with_tuple_5_at_fourth_parser() {
         ).run("hello123trueabca".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }
 
 #[test] 
 fn fails_parsing_with_tuple_5_at_fifth_parser() {
-    let expected = Err(ParserFailure::new("char satisfying the condition".to_string(), None, Severity::FatalError, Position::new(1, 16, 15)));
-    let err_msg = "expected 'char satisfying the condition' but found unknown error at line 1, column 16".to_string();
+    let expected = Err(ParserFailure::new_fatal_err("char satisfying the condition".to_string(), None, Position::new(1, 16, 15)));
     
     let actual =
         tuple_5(
@@ -473,5 +436,4 @@ fn fails_parsing_with_tuple_5_at_fifth_parser() {
         ).run("hello123true1.5c".to_string());
 
     assert_eq!(expected, actual);
-    assert_eq!(err_msg, actual.unwrap_err().to_err_msg());
 }

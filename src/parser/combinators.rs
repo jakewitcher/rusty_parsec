@@ -1,4 +1,4 @@
-use super::{ParserState, ParserSuccess, ParserFailure, Parser, Severity};
+use super::{ParserState, ParserSuccess, ParserFailure, Parser};
 
 pub fn many<T>(parser: fn() -> Parser<T>) -> Parser<Vec<T>> {
     let parser_fn =
@@ -44,10 +44,9 @@ pub fn many_1<T>(parser: fn() -> Parser<T>) -> Parser<Vec<T>> {
                 }
 
                 if results.len() == 0 {
-                    Err(ParserFailure::new(
+                    Err(ParserFailure::new_err(
                         "value satisfying parser at least once".to_string(),
                         None,
-                        Severity::Error,
                         state.get_position()
                     ))
                 } else {
@@ -115,10 +114,9 @@ where U: 'static
                 }
 
                 if results.len() == 0 {
-                    Err(ParserFailure::new(
+                    Err(ParserFailure::new_err(
                         "value satisfying parser at least once".to_string(),
                         None,
-                        Severity::Error,
                         state.get_position()
                     ))
                 } else {
@@ -153,10 +151,9 @@ pub fn choice_l<T>(parsers: Vec<Parser<T>>, label: String) -> Parser<T> {
                     } 
                 }
 
-                Err(ParserFailure::new(
+                Err(ParserFailure::new_err(
                     label,
                     None,
-                    Severity::Error,
                     state.get_position()
                 ))
             }

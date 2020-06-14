@@ -4,7 +4,7 @@ pub mod combinators;
 pub mod state;
 
 pub use state::ParserState;
-pub use result::{Position, ParserSuccess, ParserFailure, ParserResult, Severity};
+pub use result::{Position, ParserSuccess, ParserFailure, ParserResult, FailureSeverity};
 
 pub type ParserFn <T> = Box<dyn FnOnce(&mut ParserState) -> ParserResult<T>>;
 
@@ -209,10 +209,9 @@ impl<T> Parser<T> {
                         },
                         _ => {
                             state.revert();
-                            Err(ParserFailure::new(
+                            Err(ParserFailure::new_fatal_err(
                                 label,
                                 None,
-                                Severity::FatalError,
                                 state.get_position()
                             ))
                         }
@@ -237,10 +236,9 @@ impl<T> Parser<T> {
                     match parser.parse(state) {
                         Ok(_) => {
                             state.revert();
-                            Err(ParserFailure::new(
+                            Err(ParserFailure::new_fatal_err(
                                 label,
                                 None,
-                                Severity::FatalError,
                                 state.get_position()
                             ))
                         },
