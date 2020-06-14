@@ -176,7 +176,6 @@ where T: 'static
                     },
                     Err(failure) => {
                         state.revert();
-                        state.remove_mark();
                         Err(failure.to_err())
                     },
                 }

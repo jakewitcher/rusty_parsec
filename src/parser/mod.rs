@@ -114,7 +114,6 @@ impl<T> Parser<T> {
                                 return Err(failure)
                             } else {
                                 state.revert();
-                                state.remove_mark();
                                 return Err(failure)
                             }
                         }
@@ -168,7 +167,6 @@ impl<T> Parser<T> {
                                         Err(failure)
                                     } else {
                                         state.revert();
-                                        state.remove_mark();
                                         Err(failure)
                                     }
                                 },
