@@ -48,6 +48,44 @@ impl<T> Parser<T> {
         Parser::new(parser_fn)
     }
 
+    pub fn and_try<U>(self, other: Parser<U>) -> Parser<(T, U)>
+    where U: 'static
+    {
+        let parser_fn =
+            Box::new(
+                move |state: &mut ParserState| {
+                    state.mark();
+
+                    let left = match self.parse(state) {
+                        Ok(success) => success,
+                        Err(failure) => {
+                            state.remove_mark();
+                            return Err(failure)
+                        },
+                    };
+
+                    let result = match other.parse(state) {
+                        Ok(right) => {
+                            let result = (left.get_result(), right.get_result());
+                            Ok(ParserSuccess::new(result, state.get_position()))
+                        },
+                        Err(failure) => {
+                            if !(failure.is_fatal()) {
+                                state.revert();
+                            }
+
+                            Err(failure)
+                        },
+                    };
+                      
+                    state.remove_mark();
+                    result
+                }
+            );
+
+        Parser::new(parser_fn)
+    }
+
     pub fn or(self, other: Parser<T>) -> Parser<T>
     {
         let parser_fn =

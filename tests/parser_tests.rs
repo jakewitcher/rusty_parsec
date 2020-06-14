@@ -37,6 +37,42 @@ fn fails_parsing_with_and_at_second_parser() {
 }
 
 #[test]
+fn succeeds_parsing_with_and_try() {
+    let expected = Ok(ParserSuccess::new(('a', 'b'), Position::new(1, 3, 2)));
+
+    let actual = 
+        p_char('a')
+            .and_try(p_char('b'))
+            .run("abc".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_with_and_try() {
+    let expected = Err(ParserFailure::new_err("b".to_string(), Some("c".to_string()), Position::new(1, 2, 1)));
+
+    let actual = 
+        p_char('a')
+            .and_try(p_char('b'))
+            .run("acb".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_with_and_try_fatal_err() {
+    let expected = Err(ParserFailure::new_fatal_err("c".to_string(), Some("d".to_string()), Position::new(1, 3, 2)));
+
+    let actual = 
+        p_char('a')
+            .and_try(p_char('b').and(p_char('c')))
+            .run("abd".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
 fn succeeds_parsing_with_or_at_first_parser() {
     let expected = Ok(ParserSuccess::new('a', Position::new(1, 2, 1)));
 
