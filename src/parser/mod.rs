@@ -242,6 +242,52 @@ impl<T> Parser<T> {
         Parser::new(parser_fn)
     }
 
+    pub fn bind<U>(self, f: Box<dyn Fn (T) -> Parser<U>>) -> Parser<U> {
+        let parser_fn =
+            Box::new(
+                move |state: &mut ParserState| {
+                    match self.parse(state) {
+                        Ok(success) => {
+                            f(success.get_result()).parse(state)
+                                .map_err(|failure| failure.to_fatal_err())
+                        },
+                        Err(failure) => Err(failure),
+                    }
+                }
+            );
+
+        Parser::new(parser_fn)
+    }
+
+    pub fn try_bind<U>(self, f: Box<dyn Fn (T) -> Parser<U>>) -> Parser<U> {
+        let parser_fn =
+            Box::new(
+                move |state: &mut ParserState| {
+                    state.mark();
+
+                    let result = match self.parse(state) {
+                        Ok(success) => {
+                            f(success.get_result()).parse(state)
+                                .map_err(
+                                    |failure| {
+                                        if !(failure.is_fatal()) {
+                                            state.revert();                                    
+                                        }
+                                        failure
+                                    }
+                                )
+                        },
+                        Err(failure) => Err(failure),
+                    };
+
+                    state.remove_mark();
+                    result
+                }
+            );
+
+        Parser::new(parser_fn)
+    }
+
     pub fn between<U, V>(self, p_open: Parser<U>, p_close: Parser<V>) -> Parser<T>
     where U: 'static, V: 'static
     {
