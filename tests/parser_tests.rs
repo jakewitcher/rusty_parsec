@@ -327,6 +327,75 @@ fn succeeds_parsing_with_or_return_using_default_return() {
 }
 
 #[test]
+fn succeeds_parsing_with_bind() {
+    let expected = Ok(ParserSuccess::new("hello".to_string(), Position::new(1, 7, 6)));
+
+    let actual =
+        p_char('a')
+            .then_return("hello".to_string())
+            .bind(Box::new(|hello| p_string(hello)))
+            .run("ahello".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_with_bind() {
+    let expected = Err(ParserFailure::new_fatal_err("hello".to_string(), Some("world".to_string()), Position::new(1, 2, 1)));
+
+    let actual =
+        p_char('a')
+            .then_return("hello".to_string())
+            .bind(Box::new(|hello| p_string(hello)))
+            .run("aworld".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn succeeds_parsing_with_try_bind() {
+    let expected = Ok(ParserSuccess::new("hello".to_string(), Position::new(1, 7, 6)));
+
+    let actual =
+        p_char('a')
+            .then_return("hello".to_string())
+            .try_bind(Box::new(|hello| p_string(hello)))
+            .run("ahello".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_with_try_bind() {
+    let expected = Err(ParserFailure::new_err("hello".to_string(), Some("world".to_string()), Position::new(1, 2, 1)));
+
+    let actual =
+        p_char('a')
+            .then_return("hello".to_string())
+            .try_bind(Box::new(|hello| p_string(hello)))
+            .run("aworld".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_with_try_bind_fatal_err() {
+    let expected = Err(ParserFailure::new_fatal_err("world".to_string(), Some("nerds".to_string()), Position::new(1, 7, 6)));
+
+    let actual =
+        p_char('a')
+            .then_return("hello".to_string())
+            .try_bind(Box::new(
+                |hello| 
+                    p_string(hello)
+                        .and(p_string("world".to_string()))
+            ))
+            .run("ahellonerds".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
 fn succeeds_parsing_with_between() {
     let expected = Ok(ParserSuccess::new("hello".to_string(), Position::new(1, 8, 7)));
 
