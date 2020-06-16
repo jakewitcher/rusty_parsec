@@ -70,7 +70,7 @@ impl<T> Parser<T> {
                             Ok(ParserSuccess::new(result, state.get_position()))
                         },
                         Err(failure) => {
-                            if !(failure.is_fatal()) {
+                            if !failure.is_fatal() {
                                 state.revert();
                             }
 
@@ -149,7 +149,7 @@ impl<T> Parser<T> {
                             Ok(prev.with_position(success.get_position()))
                         },
                         Err(failure) => {
-                            if !(failure.is_fatal()) {
+                            if !failure.is_fatal() {
                                 state.revert();
                             }
 
@@ -198,7 +198,7 @@ impl<T> Parser<T> {
                             match other.parse(state) {
                                 Ok(success) => Ok(success),
                                 Err(failure) => {
-                                    if !(failure.is_fatal()) {
+                                    if !failure.is_fatal() {
                                         state.revert();
                                     }
 
@@ -270,7 +270,7 @@ impl<T> Parser<T> {
                             f(success.get_result()).parse(state)
                                 .map_err(
                                     |failure| {
-                                        if !(failure.is_fatal()) {
+                                        if !failure.is_fatal() {
                                             state.revert();                                    
                                         }
                                         failure
