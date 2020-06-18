@@ -253,6 +253,46 @@ where U: 'static
     Parser::new(parser_fn)
 }
 
+pub fn many_till<T, U>(parser: fn() -> Parser<T>, end_parser: fn() -> Parser<U>) -> Parser<Vec<T>> {
+    let parser_fn =
+        Box::new(
+            move |state: &mut ParserState| {
+                let mut results: Vec<T> = Vec::new();
+                let mut end_parser_succeeds = false;
+
+                while !end_parser_succeeds {
+                    match parser().parse(state) {
+                        Ok(success) => {
+                            state.mark();
+                            match end_parser().parse(state) {
+                                Ok(_) => {
+                                    results.push(success.get_result());
+                                    state.revert();
+
+                                    end_parser_succeeds = true;
+                                },
+                                Err(err) => {
+                                    if err.is_fatal() {
+                                        return Err(err)
+                                    }
+
+                                    results.push(success.get_result());
+                                    state.remove_mark();
+                                }
+                            }
+                            
+                        },
+                        Err(err) => return Err(err),
+                    }
+                }
+
+                Ok(ParserSuccess::new(results, state.get_position()))
+            }
+        );
+
+    Parser::new(parser_fn)
+}
+
 pub fn choice<T>(parsers: Vec<Parser<T>>) -> Parser<T> {
     choice_l(parsers, "value satisfying choice".to_string())
 }
