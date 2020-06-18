@@ -59,6 +59,33 @@ fn fails_parsing_with_many_1() {
 }
 
 #[test]
+fn succeeds_parsing_with_skip_many() {
+    let expected = Ok(ParserSuccess::new((), Position::new(1, 16, 15)));
+
+    let actual = skip_many(p_hello).run("hellohellohello".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn succeeds_parsing_with_skip_many_1() {
+    let expected = Ok(ParserSuccess::new((), Position::new(1, 16, 15)));
+
+    let actual = skip_many_1(p_hello).run("hellohellohello".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_with_skip_many_1() {
+    let expected = Err(ParserFailure::new_err("value satisfying parser at least once".to_string(), None, Position::new(1, 1, 0)));
+
+    let actual = skip_many_1(p_hello).run("abc".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
 fn succeeds_parsing_with_choice() {
     let expected = Ok(ParserSuccess::new("nerds".to_string(), Position::new(1, 6, 5)));
 
