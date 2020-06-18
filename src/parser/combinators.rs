@@ -58,6 +58,62 @@ pub fn many_1<T>(parser: fn() -> Parser<T>) -> Parser<Vec<T>> {
     Parser::new(parser_fn)
 }
 
+pub fn skip_many<T>(parser: fn() -> Parser<T>) -> Parser<()> {
+    let parser_fn =
+        Box::new(
+            move |state: &mut ParserState| {
+                let mut parser_succeeds = true;
+
+                while parser_succeeds {
+                    match parser().parse(state) {
+                        Ok(_) => {
+                            continue;
+                        },
+                        Err(_) => {
+                            parser_succeeds = false;
+                        },
+                    }
+                }
+
+                Ok(ParserSuccess::new((), state.get_position()))
+            }
+        );
+
+    Parser::new(parser_fn)
+}
+
+pub fn skip_many_1<T>(parser: fn() -> Parser<T>) -> Parser<()> {
+    let parser_fn =
+        Box::new(
+            move |state: &mut ParserState| {
+                if let Ok(_) = parser().parse(state) {
+                    let mut parser_succeeds = true;
+
+                    while parser_succeeds {
+                        match parser().parse(state) {
+                            Ok(_) => {
+                                continue;
+                            },
+                            Err(_) => {
+                                parser_succeeds = false;
+                            },
+                        }
+                    }
+
+                    return Ok(ParserSuccess::new((), state.get_position()))
+                }
+                
+                Err(ParserFailure::new_err(
+                    "value satisfying parser at least once".to_string(),
+                    None,
+                    state.get_position()
+                ))
+            }
+        );
+
+    Parser::new(parser_fn)
+}
+
 pub fn sep_by<T, U>(parser: fn() -> Parser<T>, separator: fn() -> Parser<U>) -> Parser<Vec<T>> 
 where U: 'static
 {
