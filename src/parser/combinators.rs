@@ -221,9 +221,13 @@ where U: 'static
                 if let Ok(_) = parser().parse(state) {
                     let mut parser_succeeds = true;
 
+                    if separator().parse(state).is_err() {
+                        parser_succeeds = false;
+                    }
+
                     while parser_succeeds {
                         match parser().parse(state) {
-                            Ok(success) => {
+                            Ok(_) => {
     
                                 if separator().parse(state).is_err() {
                                     parser_succeeds = false;
