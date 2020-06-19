@@ -263,11 +263,9 @@ pub fn many_till<T, U>(parser: fn() -> Parser<T>, end_parser: fn() -> Parser<U>)
                 while !end_parser_succeeds {
                     match parser().parse(state) {
                         Ok(success) => {
-                            state.mark();
                             match end_parser().parse(state) {
                                 Ok(_) => {
                                     results.push(success.get_result());
-                                    state.revert();
 
                                     end_parser_succeeds = true;
                                 },
@@ -277,7 +275,6 @@ pub fn many_till<T, U>(parser: fn() -> Parser<T>, end_parser: fn() -> Parser<U>)
                                     }
 
                                     results.push(success.get_result());
-                                    state.remove_mark();
                                 }
                             }
                             
