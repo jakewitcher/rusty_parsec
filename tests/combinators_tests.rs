@@ -229,8 +229,19 @@ fn succeeds_parsing_with_many_till() {
 }
 
 #[test]
+fn succeeds_parsing_with_many_till_returns_empty_vec() {
+    let expected = Ok(ParserSuccess::new(Vec::new(), Position::new(1, 1, 0)));
+
+    let actual =
+        many_till(p_true, p_u32)
+            .run("false".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
 fn fails_parsing_with_many_till() {
-    let expected = Err(ParserFailure::new_err("true".to_string(), None, Position::new(1, 13, 12)));
+    let expected = Err(ParserFailure::new_fatal_err("true".to_string(), None, Position::new(1, 13, 12)));
 
     let actual =
         many_till(p_true, p_u32)

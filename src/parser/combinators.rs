@@ -279,7 +279,14 @@ pub fn many_till<T, U>(parser: fn() -> Parser<T>, end_parser: fn() -> Parser<U>)
                             }
                             
                         },
-                        Err(err) => return Err(err),
+                        Err(err) => {
+                            if results.len() == 0 {
+                                return Ok(ParserSuccess::new(results, state.get_position()))
+                            } else
+                            {
+                                return Err(err.to_fatal_err())
+                            }
+                        },
                     }
                 }
 
