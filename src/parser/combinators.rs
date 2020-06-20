@@ -269,9 +269,9 @@ pub fn many_till<T, U>(parser: fn() -> Parser<T>, end_parser: fn() -> Parser<U>)
 
                                     end_parser_succeeds = true;
                                 },
-                                Err(err) => {
-                                    if err.is_fatal() {
-                                        return Err(err)
+                                Err(failure) => {
+                                    if failure.is_fatal() {
+                                        return Err(failure)
                                     }
 
                                     results.push(success.get_result());
@@ -279,13 +279,58 @@ pub fn many_till<T, U>(parser: fn() -> Parser<T>, end_parser: fn() -> Parser<U>)
                             }
                             
                         },
-                        Err(err) => {
+                        Err(failure) => {
                             if results.len() == 0 {
                                 return Ok(ParserSuccess::new(results, state.get_position()))
                             } else
                             {
-                                return Err(err.to_fatal_err())
+                                return Err(failure.to_fatal_err())
                             }
+                        },
+                    }
+                }
+
+                Ok(ParserSuccess::new(results, state.get_position()))
+            }
+        );
+
+    Parser::new(parser_fn)
+}
+
+pub fn many_1_till<T, U>(parser: fn() -> Parser<T>, end_parser: fn() -> Parser<U>) -> Parser<Vec<T>> {
+    let parser_fn =
+        Box::new(
+            move |state: &mut ParserState| {
+                let mut results: Vec<T> = Vec::new();
+                let mut end_parser_succeeds = false;
+
+                while !end_parser_succeeds {
+                    match parser().parse(state) {
+                        Ok(success) => {
+                            match end_parser().parse(state) {
+                                Ok(_) => {
+                                    results.push(success.get_result());
+
+                                    end_parser_succeeds = true;
+                                },
+                                Err(failure) => {
+                                    if failure.is_fatal() {
+                                        return Err(failure)
+                                    }
+
+                                    results.push(success.get_result());
+                                }
+                            }
+                            
+                        },
+                        Err(failure) => {
+                            let err = if results.len() == 0 {
+                                Err(failure)
+                            } else {
+                                Err(failure.to_fatal_err())
+                            };
+
+                            return err
                         },
                     }
                 }
