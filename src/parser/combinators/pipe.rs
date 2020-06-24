@@ -1,4 +1,4 @@
-use super::{ParserState, ParserSuccess, Parser};
+use super::{ParserState, ParserSuccess, ParserResult, Parser};
 
 pub fn pipe_2<T, U, V>(p1: Parser<T>, p2: Parser<U>, f: Box<dyn Fn (T, U) -> V>) -> Parser<V> 
 where T: 'static, U: 'static
@@ -7,11 +7,7 @@ where T: 'static, U: 'static
         Box::new(
             move |state: &mut ParserState| {
                 let r1 = p1.parse(state)?;
-
-                let r2 = match p2.parse(state) {
-                    Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err()),
-                };
+                let r2 = get_parser_result(p2, state)?;
 
                 let result = 
                     f(
@@ -33,16 +29,8 @@ where T: 'static, U: 'static, V: 'static
         Box::new(
             move |state: &mut ParserState| {
                 let r1 = p1.parse(state)?;
-
-                let r2 = match p2.parse(state) {
-                    Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err()),
-                };
-                
-                let r3 = match p3.parse(state) {
-                    Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err()),
-                };
+                let r2 = get_parser_result(p2, state)?;
+                let r3 = get_parser_result(p3, state)?;
 
                 let result = 
                     f(
@@ -65,21 +53,9 @@ where T: 'static, U: 'static, V: 'static, W: 'static
         Box::new(
             move |state: &mut ParserState| {
                 let r1 = p1.parse(state)?;
-                
-                let r2 = match p2.parse(state) {
-                    Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err()),
-                };
-
-                let r3 = match p3.parse(state) {
-                    Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err()),
-                };
-
-                let r4 = match p4.parse(state) {
-                    Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err()),
-                };
+                let r2 = get_parser_result(p2, state)?;
+                let r3 = get_parser_result(p3, state)?;
+                let r4 = get_parser_result(p4, state)?;
 
                 let result = 
                     f(
@@ -103,26 +79,10 @@ where T: 'static, U: 'static, V: 'static, W: 'static, X: 'static
         Box::new(
             move |state: &mut ParserState| {
                 let r1 = p1.parse(state)?;
-                
-                let r2 = match p2.parse(state) {
-                    Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err()),
-                };
-
-                let r3 = match p3.parse(state) {
-                    Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err()),
-                };
-
-                let r4 = match p4.parse(state) {
-                    Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err()),
-                };
-
-                let r5 = match p5.parse(state) {
-                    Ok(success) => success,
-                    Err(failure) => return Err(failure.to_fatal_err()),
-                };
+                let r2 = get_parser_result(p2, state)?;
+                let r3 = get_parser_result(p3, state)?;
+                let r4 = get_parser_result(p4, state)?;
+                let r5 = get_parser_result(p5, state)?;
 
                 let result = 
                     f(
@@ -154,4 +114,8 @@ pub fn tuple_4<T, U, V, W>(p1: Parser<T>, p2: Parser<U>, p3: Parser<V>, p4: Pars
 
 pub fn tuple_5<T, U, V, W, X>(p1: Parser<T>, p2: Parser<U>, p3: Parser<V>, p4: Parser<W>, p5: Parser<X>) -> Parser<(T, U, V, W, X)> {
     pipe_5(p1, p2, p3, p4, p5, Box::new(|x1, x2, x3, x4, x5| (x1, x2, x3, x4, x5)))
+}
+
+fn get_parser_result<T>(p: Parser<T>, state: &mut ParserState) -> ParserResult<T> {
+    p.parse(state).map_err(|failure| failure.to_fatal_err())
 }

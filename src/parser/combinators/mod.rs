@@ -3,7 +3,7 @@ pub mod sep_by;
 pub mod many_till;
 pub mod pipe;
 
-use super::{ParserState, ParserSuccess, ParserFailure, Parser};
+use super::{ParserState, ParserSuccess, ParserFailure, ParserResult, Parser};
 
 pub fn choice<T>(parsers: Vec<Parser<T>>) -> Parser<T> {
     choice_l(parsers, "value satisfying choice".to_string())
