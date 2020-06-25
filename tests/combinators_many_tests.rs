@@ -30,6 +30,15 @@ fn succeeds_parsing_with_many_with_compound_parser() {
 }
 
 #[test]
+fn fails_parsing_with_many_fatal_err() {
+    let expected = Err(ParserFailure::new_fatal_err("integral value".to_string(), None, Position::new(1, 16, 15)));
+
+    let actual = many(p_abc_123).run("abc123abc456abcdef".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
 fn succeeds_parsing_with_many_1() {
     let expected = Ok(ParserSuccess::new(vec![ "hello".to_string(), "hello".to_string(), "hello".to_string()], Position::new(1, 16, 15)));
 
@@ -40,7 +49,7 @@ fn succeeds_parsing_with_many_1() {
 
 #[test]
 fn fails_parsing_with_many_1() {
-    let expected = Err(ParserFailure::new_err("value satisfying parser at least once".to_string(), None, Position::new(1, 1, 0)));
+    let expected = Err(ParserFailure::new_err("hello".to_string(), Some("world".to_string()), Position::new(1, 1, 0)));
 
     let actual = many_1(p_hello).run("worldworldworld".to_string());
 
@@ -57,6 +66,15 @@ fn succeeds_parsing_with_skip_many() {
 }
 
 #[test]
+fn fails_parsing_with_skip_many_fatal_err() {
+    let expected = Err(ParserFailure::new_fatal_err("integral value".to_string(), None, Position::new(1, 16, 15)));
+
+    let actual = skip_many(p_abc_123).run("abc123abc456abcdef".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
 fn succeeds_parsing_with_skip_many_1() {
     let expected = Ok(ParserSuccess::new((), Position::new(1, 16, 15)));
 
@@ -67,7 +85,7 @@ fn succeeds_parsing_with_skip_many_1() {
 
 #[test]
 fn fails_parsing_with_skip_many_1() {
-    let expected = Err(ParserFailure::new_err("value satisfying parser at least once".to_string(), None, Position::new(1, 1, 0)));
+    let expected = Err(ParserFailure::new_err("hello".to_string(), None, Position::new(1, 1, 0)));
 
     let actual = skip_many_1(p_hello).run("abc".to_string());
 
