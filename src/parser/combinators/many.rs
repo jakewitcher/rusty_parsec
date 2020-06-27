@@ -74,7 +74,7 @@ pub fn many_1<T>(get_parser: fn() -> Parser<T>) -> Parser<Vec<T>> {
     Parser::new(parser_fn)
 }
 
-/// ```skip_many``` applies the parser returned by ```get_parser``` repeatedly until it fails. The parser must fail without changing the parser state or ```skip_many``` will return a fatal error.
+/// ```skip_many``` applies the parser returned by ```get_parser``` repeatedly until it fails and returns ```()``` as the result. The parser must fail without changing the parser state or ```skip_many``` will return a fatal error.
 /// 
 /// # Examples
 /// 
@@ -103,7 +103,7 @@ pub fn skip_many<T>(get_parser: fn() -> Parser<T>) -> Parser<()> {
     Parser::new(parser_fn)
 }
 
-/// ```skip_many_1``` is similar to ```skip_many_1``` in that it applies the parser returned by ```get_parser``` repeatedly,  however ```skip_many_1``` must succeed at least once before returning ```()```. The parser must fail without changing the parser state or ```skip_many_1``` will return a fatal error.
+/// ```skip_many_1``` is similar to ```skip_many``` in that it applies the parser returned by ```get_parser``` repeatedly,  however ```skip_many_1``` must succeed at least once before returning ```()```. The parser must fail without changing the parser state or ```skip_many_1``` will return a fatal error.
 /// 
 /// # Examples
 /// 
