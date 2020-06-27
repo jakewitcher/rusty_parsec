@@ -1,5 +1,29 @@
 use super::{ParserState, ParserSuccess, ParserResult, Parser};
 
+/// ```pipe_2``` applies the parsers```p1``` and ```p2``` and invokes the function ```f``` with the parser results
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let p_hello = p_string("hello".to_string());
+/// let p_world = p_string("world".to_string());
+/// 
+/// fn hello_world(hello: String, world: String) -> String {
+///     format!("{}, {}", hello, world)
+/// }
+/// 
+/// let expected = 
+///     Ok(ParserSuccess::new(
+///         "hello, world".to_string(), 
+///         Position::new(1, 11, 10))
+///     );
+/// 
+/// let actual = pipe_2(p_hello, p_world, Box::new(hello_world)).run("helloworld".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn pipe_2<T, U, V>(p1: Parser<T>, p2: Parser<U>, f: Box<dyn Fn (T, U) -> V>) -> Parser<V> 
 where T: 'static, U: 'static
 {
