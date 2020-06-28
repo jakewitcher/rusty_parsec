@@ -277,18 +277,89 @@ where T: 'static, U: 'static, V: 'static, W: 'static, X: 'static
     Parser::new(parser_fn)
 }
 
+/// ```tuple_2``` applies the parsers```p1``` and ```p2``` and returns the results in a tuple if all parsers were successful.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = 
+///     Ok(ParserSuccess::new(
+///         ('A', 123),
+///         Position::new(1, 5, 4))
+///     );
+/// 
+/// let actual = tuple_2(p_char('A'), p_u32()).run("A123".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn tuple_2<T, U>(p1: Parser<T>, p2: Parser<U>) -> Parser<(T, U)> {
     pipe_2(p1, p2, Box::new(|x1, x2| (x1, x2)))
 }
 
+/// ```tuple_3``` applies the parsers```p1```, ```p2```, and ```p3``` and returns the results in a tuple if all parsers were successful.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let p_true = p_string("true".to_string()).then_return(true);
+/// 
+/// let expected = 
+///     Ok(ParserSuccess::new(
+///         ('A', 123, true),
+///         Position::new(1, 9, 8))
+///     );
+/// 
+/// let actual = tuple_3(p_char('A'), p_u32(), p_true).run("A123true".to_string());
+/// 
+/// assert_eq!(expected, actual);
 pub fn tuple_3<T, U, V>(p1: Parser<T>, p2: Parser<U>, p3: Parser<V>) -> Parser<(T, U, V)> {
     pipe_3(p1, p2, p3, Box::new(|x1, x2, x3| (x1, x2, x3)))
 }
 
+/// ```tuple_4``` applies the parsers```p1```, ```p2```, ```p3```, and ```p4``` and returns the results in a tuple if all parsers were successful.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let p_true = p_string("true".to_string()).then_return(true);
+/// 
+/// let expected = 
+///     Ok(ParserSuccess::new(
+///         ('A', 123, true, 3.14),
+///         Position::new(1, 13, 12))
+///     );
+/// 
+/// let actual = tuple_4(p_char('A'), p_u32(), p_true, p_f32()).run("A123true3.14".to_string());
+/// 
+/// assert_eq!(expected, actual);
 pub fn tuple_4<T, U, V, W>(p1: Parser<T>, p2: Parser<U>, p3: Parser<V>, p4: Parser<W>) -> Parser<(T, U, V, W)> {
     pipe_4(p1, p2, p3, p4, Box::new(|x1, x2, x3, x4| (x1, x2, x3, x4)))
 }
 
+/// ```tuple_5``` applies the parsers```p1```, ```p2```, ```p3```, ```p4```, and ```p5``` and returns the results in a tuple if all parsers were successful.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let p_true = p_string("true".to_string()).then_return(true);
+/// 
+/// let expected = 
+///     Ok(ParserSuccess::new(
+///         ('A', 123, true, 3.14, None),
+///         Position::new(1, 13, 12))
+///     );
+/// 
+/// let actual = tuple_5(p_char('A'), p_u32(), p_true, p_f32(), p_char('B').opt()).run("A123true3.14".to_string());
+/// 
+/// assert_eq!(expected, actual);
 pub fn tuple_5<T, U, V, W, X>(p1: Parser<T>, p2: Parser<U>, p3: Parser<V>, p4: Parser<W>, p5: Parser<X>) -> Parser<(T, U, V, W, X)> {
     pipe_5(p1, p2, p3, p4, p5, Box::new(|x1, x2, x3, x4, x5| (x1, x2, x3, x4, x5)))
 }
