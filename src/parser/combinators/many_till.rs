@@ -133,24 +133,21 @@ pub fn skip_many_1_till<T, U>(get_parser: fn() -> Parser<T>, end_parser: fn() ->
 }
 
 fn apply_parsers<T, U>(get_parser: fn() -> Parser<T>, end_parser: fn() -> Parser<U>, state: &mut ParserState) -> Result<Vec<T>, ParserFailure> {
-    apply(get_parser, end_parser, state, handle_parser_failure)
-}
-
-fn apply_parsers_1<T, U>(get_parser: fn() -> Parser<T>, end_parser: fn() -> Parser<U>, state: &mut ParserState) -> Result<Vec<T>, ParserFailure> {
-    apply(get_parser, end_parser, state, handle_parser_failure_1)
-}
-
-fn apply<T, U>(get_parser: fn() -> Parser<T>, end_parser: fn() -> Parser<U>, state: &mut ParserState, failure_handler: fn(ParserFailure, Vec<T>) -> Result<Vec<T>, ParserFailure>) -> Result<Vec<T>, ParserFailure> {
     let mut results: Vec<T> = Vec::new();
     let mut end_parser_succeeds = false;
 
     while !end_parser_succeeds {
         match get_parser().parse(state) {
             Ok(success) => {
-                end_parser_succeeds = apply_end_parser(end_parser, state, success, &mut results)?;
+                end_parser_succeeds = apply_end_parser(end_parser, state)?;
+                results.push(success.get_result())
             },
             Err(failure) => {
-                return failure_handler(failure, results)
+                return if results.len() == 0 {
+                    end_parser().parse(state).and(Ok(results))
+                } else {
+                    Err(failure.to_fatal_err())
+                }
             },
         }
     }
@@ -158,31 +155,32 @@ fn apply<T, U>(get_parser: fn() -> Parser<T>, end_parser: fn() -> Parser<U>, sta
     Ok(results)
 }
 
-fn handle_parser_failure<T>(failure: ParserFailure, results: Vec<T>) -> Result<Vec<T>, ParserFailure> {
-    if failure.is_fatal() {
-        Err(failure)
-    } else if results.len() == 0 {
-        Ok(results)
-    } else {
-        Err(failure.to_fatal_err())
+fn apply_parsers_1<T, U>(get_parser: fn() -> Parser<T>, end_parser: fn() -> Parser<U>, state: &mut ParserState) -> Result<Vec<T>, ParserFailure> {
+    let mut results: Vec<T> = Vec::new();
+    let mut end_parser_succeeds = false;
+
+    while !end_parser_succeeds {
+        match get_parser().parse(state) {
+            Ok(success) => {
+                end_parser_succeeds = apply_end_parser(end_parser, state)?;
+                results.push(success.get_result())
+            },
+            Err(failure) => {
+                return if results.len() == 0 {
+                    Err(failure)
+                } else {
+                    Err(failure.to_fatal_err())
+                }
+            },
+        }
     }
+
+    Ok(results)
 }
 
-fn handle_parser_failure_1<T>(failure: ParserFailure, results: Vec<T>) -> Result<Vec<T>, ParserFailure> {
-    if failure.is_fatal() {
-        Err(failure)
-    } else if results.len() == 0 {
-        Err(failure)
-    } else {
-        Err(failure.to_fatal_err())
-    }
-}
-
-fn apply_end_parser<T, U>(end_parser: fn() -> Parser<U>, state: &mut ParserState, success: ParserSuccess<T>, results: &mut Vec<T>) -> Result<bool, ParserFailure> {
+fn apply_end_parser<T>(end_parser: fn() -> Parser<T>, state: &mut ParserState) -> Result<bool, ParserFailure> {
     match end_parser().parse(state) {
         Ok(_) => {
-            results.push(success.get_result());
-
             Ok(true)
         },
         Err(failure) => {
@@ -190,7 +188,6 @@ fn apply_end_parser<T, U>(end_parser: fn() -> Parser<U>, state: &mut ParserState
                 return Err(failure)
             }
 
-            results.push(success.get_result());
             Ok(false)
         }
     }

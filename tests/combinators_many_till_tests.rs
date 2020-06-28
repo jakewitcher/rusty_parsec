@@ -15,11 +15,11 @@ fn succeeds_parsing_with_many_till() {
 
 #[test]
 fn succeeds_parsing_with_many_till_returns_empty_vec() {
-    let expected = Ok(ParserSuccess::new(Vec::new(), Position::new(1, 1, 0)));
+    let expected = Ok(ParserSuccess::new(Vec::new(), Position::new(1, 4, 3)));
 
     let actual =
         many_till(p_true, p_u32)
-            .run("false".to_string());
+            .run("123".to_string());
 
     assert_eq!(expected, actual);
 }
@@ -81,11 +81,22 @@ fn succeeds_parsing_with_skip_many_till() {
 
 #[test]
 fn succeeds_parsing_with_skip_many_till_nothing_parsed() {
-    let expected = Ok(ParserSuccess::new((), Position::new(1, 1, 0)));
+    let expected = Ok(ParserSuccess::new((), Position::new(1, 4, 3)));
 
     let actual =
         skip_many_till(p_true, p_u32)
-            .run("false".to_string());
+            .run("123".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_with_skip_many_till_nothing_parsed() {
+    let expected = Err(ParserFailure::new_err("integral value".to_string(), None, Position::new(1, 1, 0)));
+
+    let actual =
+        skip_many_till(p_true, p_u32)
+            .run("abc".to_string());
 
     assert_eq!(expected, actual);
 }
