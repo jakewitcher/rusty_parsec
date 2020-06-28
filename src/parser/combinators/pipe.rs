@@ -1,6 +1,6 @@
 use super::{ParserState, ParserSuccess, ParserResult, Parser};
 
-/// ```pipe_2``` applies the parsers```p1``` and ```p2``` and invokes the function ```f``` with the parser results
+/// ```pipe_2``` applies the parsers```p1``` and ```p2``` and invokes the function ```f``` with the results if all parsers were successful.
 /// 
 /// # Examples
 /// 
@@ -46,6 +46,51 @@ where T: 'static, U: 'static
     Parser::new(parser_fn)
 }
 
+/// ```pipe_3``` applies the parsers```p1```, ```p2```, and ```p3``` and invokes the function ```f``` with the results if all parsers were successful.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// #[derive(Debug, PartialEq)]
+/// struct PhoneNumber {
+///     area_code: u32,
+///     prefix: u32,
+///     line_number: u32,
+/// }
+/// 
+/// impl PhoneNumber {
+///     fn new(area_code: u32, prefix: u32, line_number: u32) -> PhoneNumber {
+///         PhoneNumber { area_code, prefix, line_number}
+///     }
+/// }
+/// 
+/// let p_area_code = 
+///     p_u32()
+///         .between(p_char('('), p_char(')'))
+///         .take_prev(p_char('-'));
+/// 
+/// let p_prefix = p_u32().take_prev(p_char('-'));
+/// 
+/// let p_line_number = p_u32();
+/// 
+/// let phone_number = PhoneNumber::new(555, 422, 1687);
+/// 
+/// let expected = 
+///     Ok(ParserSuccess::new(
+///         phone_number, 
+///         Position::new(1, 15, 14))
+///     );
+/// 
+/// let actual = pipe_3(
+///     p_area_code, 
+///     p_prefix, 
+///     p_line_number, 
+///     Box::new(PhoneNumber::new)
+/// ).run("(555)-422-1687".to_string());
+/// 
+/// assert_eq!(expected, actual);
 pub fn pipe_3<T, U, V, W>(p1: Parser<T>, p2: Parser<U>, p3: Parser<V>, f: Box<dyn Fn (T, U, V) -> W>) -> Parser<W> 
 where T: 'static, U: 'static, V: 'static
 {
@@ -70,6 +115,57 @@ where T: 'static, U: 'static, V: 'static
     Parser::new(parser_fn)
 }
 
+/// ```pipe_4``` applies the parsers```p1```, ```p2```, ```p3```, and ```p4``` and invokes the function ```f``` with the results if all parsers were successful.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// #[derive(Debug, PartialEq)]
+/// struct LineItem {
+///     id: String,
+///     name: String,
+///     price: f32,
+///     qty: u32,
+/// }
+/// 
+/// impl LineItem {
+///     fn new(id: String, name: String, price: f32, qty: u32) -> LineItem {
+///         LineItem { id, name, price, qty }
+///     }
+/// }
+/// 
+/// let p_id = 
+///     many_satisfy(Box::new(|c:char|c.is_ascii_alphanumeric()))
+///         .between(p_char('|'), p_char('|'));
+/// 
+/// let p_name = 
+///     many_satisfy(Box::new(|c:char|c.is_ascii_alphabetic()))
+///         .take_prev(p_char('|'));
+/// 
+/// let p_price = p_f32().take_prev(p_char('|'));
+/// 
+/// let p_qty = p_u32().take_prev(p_char('|'));
+/// 
+/// let line_item = 
+///     LineItem::new("abc123".to_string(), "lamp".to_string(), 12.5, 2);
+/// 
+/// let expected = 
+///     Ok(ParserSuccess::new(
+///         line_item,
+///         Position::new(1, 22, 21))
+///     );
+/// 
+/// let actual = pipe_4(
+///         p_id, 
+///         p_name, 
+///         p_price, 
+///         p_qty, 
+///         Box::new(LineItem::new)
+/// ).run("|abc123|lamp|12.50|2|".to_string());
+/// 
+/// assert_eq!(expected, actual);
 pub fn pipe_4<T, U, V, W, X>(p1: Parser<T>, p2: Parser<U>, p3: Parser<V>, p4: Parser<W>, f: Box<dyn Fn (T, U, V, W) -> X>) -> Parser<X> 
 where T: 'static, U: 'static, V: 'static, W: 'static
 {
@@ -96,6 +192,63 @@ where T: 'static, U: 'static, V: 'static, W: 'static
     Parser::new(parser_fn)
 }
 
+/// ```pipe_5``` applies the parsers```p1```, ```p2```, ```p3```,```p4```, and ```p5``` and invokes the function ```f``` with the results if all parsers were successful.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// #[derive(Debug, PartialEq)]
+/// struct Address {
+///     number: u32,
+///     street: String,
+///     city: String,
+///     state: String,
+///     zipcode: u32,
+/// }
+/// 
+/// impl Address {
+///     fn new(number: u32, street: String, city: String, state: String, zipcode: u32) -> Address {
+///         Address { number, street, city, state, zipcode }
+///     }
+/// }
+/// 
+/// fn p_alphabetic() -> Parser<String> {
+///     many_satisfy(Box::new(|c:char|c.is_ascii_alphabetic()))
+/// }
+/// 
+/// let p_number = p_u32().take_prev(ws());
+/// 
+/// let p_street = p_alphabetic().take_prev(ws());
+/// 
+/// let p_city = 
+///     p_alphabetic()
+///         .take_prev(p_char(','))
+///         .take_prev(ws());
+/// 
+/// let p_state = p_alphabetic().take_prev(ws());
+/// 
+/// let p_zipcode = p_u32();
+/// 
+/// let address = Address::new(1200, "Oakwood".to_string(), "Cincinnati".to_string(), "Ohio".to_string(), 45242);
+/// 
+/// let expected = 
+///     Ok(ParserSuccess::new(
+///         address,
+///         Position::new(1, 36, 35))
+///     );
+/// 
+/// let actual = pipe_5(
+///     p_number, 
+///     p_street, 
+///     p_city, 
+///     p_state, 
+///     p_zipcode, 
+///     Box::new(Address::new)
+/// ).run("1200 Oakwood Cincinnati, Ohio 45242".to_string());
+/// 
+/// assert_eq!(expected, actual);
 pub fn pipe_5<T, U, V, W, X, Y>(p1: Parser<T>, p2: Parser<U>, p3: Parser<V>, p4: Parser<W>, p5: Parser<X>, f: Box<dyn Fn (T, U, V, W, X) -> Y>) -> Parser<Y> 
 where T: 'static, U: 'static, V: 'static, W: 'static, X: 'static
 {
