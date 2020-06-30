@@ -6,24 +6,7 @@ where U: 'static
     let parser_fn =
         Box::new(
             move |state: &mut ParserState| {
-                let mut results: Vec<T> = Vec::new();
-                let mut parser_succeeds = true;
-
-                while parser_succeeds {
-                    match parser().parse(state) {
-                        Ok(success) => {
-                            results.push(success.get_result());
-
-                            if separator().parse(state).is_err() {
-                                parser_succeeds = false;
-                            }
-                        },
-                        Err(_) => {
-                            parser_succeeds = false;
-                        },
-                    }
-                }
-
+                let results = apply_parser(parser, separator, state)?;
                 Ok(ParserSuccess::new(results, state.get_position()))
             }
         );
@@ -37,23 +20,7 @@ where U: 'static
     let parser_fn =
         Box::new(
             move |state: &mut ParserState| {
-                let mut results: Vec<T> = Vec::new();
-                let mut parser_succeeds = true;
-
-                while parser_succeeds {
-                    match parser().parse(state) {
-                        Ok(success) => {
-                            results.push(success.get_result());
-
-                            if separator().parse(state).is_err() {
-                                parser_succeeds = false;
-                            }
-                        },
-                        Err(_) => {
-                            parser_succeeds = false;
-                        },
-                    }
-                }
+                let results = apply_parser(parser, separator, state)?;
 
                 if results.len() == 0 {
                     Err(ParserFailure::new_err(
@@ -76,21 +43,7 @@ where U: 'static
     let parser_fn =
         Box::new(
             move |state: &mut ParserState| {
-                let mut parser_succeeds = true;
-
-                while parser_succeeds {
-                    match parser().parse(state) {
-                        Ok(_) => {
-                            if separator().parse(state).is_err() {
-                                parser_succeeds = false;
-                            }
-                        },
-                        Err(_) => {
-                            parser_succeeds = false;
-                        },
-                    }
-                }
-
+                let _ = apply_parser(parser, separator, state)?;
                 Ok(ParserSuccess::new((), state.get_position()))
             }
         );
@@ -105,24 +58,8 @@ where U: 'static
         Box::new(
             move |state: &mut ParserState| {
                 if let Ok(_) = parser().parse(state) {
-                    let mut parser_succeeds = true;
-
-                    if separator().parse(state).is_err() {
-                        parser_succeeds = false;
-                    }
-
-                    while parser_succeeds {
-                        match parser().parse(state) {
-                            Ok(_) => {
-    
-                                if separator().parse(state).is_err() {
-                                    parser_succeeds = false;
-                                }
-                            },
-                            Err(_) => {
-                                parser_succeeds = false;
-                            },
-                        }
+                    if !separator().parse(state).is_err() {
+                        let _ = apply_parser(parser, separator, state)?;
                     }
 
                     return Ok(ParserSuccess::new((), state.get_position()))
@@ -137,4 +74,26 @@ where U: 'static
         );
     
     Parser::new(parser_fn)
+}
+
+fn apply_parser<T, U>(parser: fn() -> Parser<T>, separator: fn() -> Parser<U>, state: &mut ParserState) -> Result<Vec<T>, ParserFailure> {
+    let mut results: Vec<T> = Vec::new();
+    let mut parser_succeeds = true;
+
+    while parser_succeeds {
+        match parser().parse(state) {
+            Ok(success) => {
+                results.push(success.get_result());
+
+                if separator().parse(state).is_err() {
+                    parser_succeeds = false;
+                }
+            },
+            Err(_) => {
+                parser_succeeds = false;
+            },
+        }
+    }
+
+    Ok(results)
 }
