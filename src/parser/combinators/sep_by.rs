@@ -58,8 +58,15 @@ where U: 'static
         Box::new(
             move |state: &mut ParserState| {
                 if let Ok(_) = parser().parse(state) {
-                    if !separator().parse(state).is_err() {
-                        let _ = apply_parser(parser, separator, state)?;
+                    match separator().parse(state) {
+                        Ok(_) => {
+                            let _ = apply_parser(parser, separator, state)?;
+                        },
+                        Err(failure) => {
+                            if failure.is_fatal() {
+                                return Err(failure);
+                            }
+                        }
                     }
 
                     return Ok(ParserSuccess::new((), state.get_position()))
@@ -85,11 +92,17 @@ fn apply_parser<T, U>(parser: fn() -> Parser<T>, separator: fn() -> Parser<U>, s
             Ok(success) => {
                 results.push(success.get_result());
 
-                if separator().parse(state).is_err() {
+                if let Err(failure) = separator().parse(state) {
+                    if failure.is_fatal() {
+                        return Err(failure);
+                    }
                     parser_succeeds = false;
                 }
             },
-            Err(_) => {
+            Err(failure) => {
+                if failure.is_fatal() {
+                    return Err(failure);
+                }
                 parser_succeeds = false;
             },
         }
