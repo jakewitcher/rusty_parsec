@@ -27,6 +27,32 @@ fn succeeds_parsing_with_sep_by_returns_empty_vec() {
 }
 
 #[test]
+fn fails_parsing_with_sep_by() {
+    let expected = Err(ParserFailure::new_fatal_err("A".to_string(), Some("a".to_string()), Position::new(1, 2, 1)));
+
+    let actual =
+        sep_by(
+            || p_u32().and(p_char('A')),
+            || p_char(';')
+        ).run("1a;2b;3c".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn fails_parsing_separator_with_sep_by() {
+    let expected = Err(ParserFailure::new_fatal_err(">".to_string(), Some("?".to_string()), Position::new(1, 6, 5)));
+
+    let actual =
+        sep_by(
+            || p_u32(),
+            || p_char('<').and(p_char('>'))
+        ).run("1<>2<?3".to_string());
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
 fn succeeds_parsing_with_sep_by_1() {
     let expected = Ok(ParserSuccess::new(vec![1, 2, 3], Position::new(1, 6, 5)));
 
