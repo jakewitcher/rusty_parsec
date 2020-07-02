@@ -6,7 +6,7 @@ fn succeeds_parsing_with_sep_by() {
 
     let actual =
         sep_by(
-            || p_u32(),
+            p_u32,
             || p_char(';')
         ).run("1;2;3".to_string());
 
@@ -19,7 +19,7 @@ fn succeeds_parsing_with_sep_by_returns_empty_vec() {
 
     let actual =
         sep_by(
-            || p_u32(),
+            p_u32,
             || p_char(';')
         ).run("a;b;c".to_string());
 
@@ -45,7 +45,7 @@ fn fails_parsing_separator_with_sep_by() {
 
     let actual =
         sep_by(
-            || p_u32(),
+            p_u32,
             || p_char('<').and(p_char('>'))
         ).run("1<>2<?3".to_string());
 
@@ -58,7 +58,7 @@ fn succeeds_parsing_with_sep_by_1() {
 
     let actual =
         sep_by_1(
-            || p_u32(),
+            p_u32,
             || p_char(';')
         ).run("1;2;3".to_string());
 
@@ -71,7 +71,7 @@ fn fails_parsing_with_sep_by_1() {
 
     let actual =
         sep_by_1(
-            || p_u32(),
+            p_u32,
             || p_char(';')
         ).run("a;b;c".to_string());
 
@@ -84,7 +84,7 @@ fn succeeds_parsing_with_skip_sep_by() {
 
     let actual =
         skip_sep_by(
-            || p_u32(),
+            p_u32,
             || p_char(';')
         ).run("1;2;3".to_string());
 
@@ -97,7 +97,7 @@ fn succeeds_parsing_with_skip_sep_by_1() {
 
     let actual =
         skip_sep_by_1(
-            || p_u32(),
+            p_u32,
             || p_char(';')
         ).run("1;2;3".to_string());
 
@@ -110,7 +110,7 @@ fn fails_parsing_with_skip_sep_by_1() {
 
     let actual =
         skip_sep_by_1(
-            || p_u32(),
+            p_u32,
             || p_char(';')
         ).run("a;b;c".to_string());
 
