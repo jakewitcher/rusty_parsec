@@ -2,7 +2,6 @@ use super::{ParserState, ParserSuccess, ParserFailure, Parser};
 
 /// ```sep_by``` applies the parser returned by ```get_parser``` followed by the parser returned by ```get_separator``` repeatedly until either parser fails. A Vector of the parsed values is returned once the parser fails. The parsers must fail without changing the parser state or ```sep_by``` will return a fatal error.
 /// 
-/// 
 /// # Examples
 /// 
 /// ```
@@ -82,7 +81,6 @@ where U: 'static
 }
 
 /// ```skip_sep_by``` applies the parser returned by ```get_parser``` followed by the parser returned by ```get_separator``` repeatedly until either parser fails and returns ```()``` as the result. The parsers must fail without changing the parser state or ```skip_sep_by``` will return a fatal error.
-/// 
 /// 
 /// # Examples
 /// 

@@ -2,7 +2,6 @@ use super::{ParserState, ParserSuccess, ParserFailure, Parser};
 
 /// ```many_till``` applies the parser returned by ```get_parser``` repeatedly until ```end_parser``` succeeds, returning a Vector of the parsed values.
 /// 
-/// 
 /// # Examples
 /// 
 /// ```
@@ -34,7 +33,6 @@ pub fn many_till<T, U>(get_parser: fn() -> Parser<T>, end_parser: fn() -> Parser
 }
 
 /// ```many_1_till``` applies the parser returned by ```get_parser``` repeatedly until ```end_parser``` succeeds, returning a Vector of the parsed values. ```get_parser``` must succeed at least once or ```many_1_till``` will return a parser failure.
-/// 
 /// 
 /// # Examples
 /// 
@@ -68,7 +66,6 @@ pub fn many_1_till<T, U>(get_parser: fn() -> Parser<T>, end_parser: fn() -> Pars
 
 /// ```skip_many_till``` applies the parser returned by ```get_parser``` repeatedly until ```end_parser``` succeeds and returns ```()``` as the result.
 /// 
-/// 
 /// # Examples
 /// 
 /// ```
@@ -100,7 +97,6 @@ pub fn skip_many_till<T, U>(get_parser: fn() -> Parser<T>, end_parser: fn() -> P
 }
 
 /// ```skip_many_1_till``` applies the parser returned by ```get_parser``` repeatedly until ```end_parser``` succeeds and returns ```()``` as the result. ```get_parser``` must succeed at least once or ```skip_many_1_till``` will return a parser failure.
-/// 
 /// 
 /// # Examples
 /// 

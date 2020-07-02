@@ -2,7 +2,6 @@ use super::{ParserState, ParserSuccess, ParserFailure, Parser};
 
 /// ```many``` applies the parser returned by ```get_parser``` repeatedly until it fails. A Vector of the parsed values is returned once the parser fails. The parser must fail without changing the parser state or ```many``` will return a fatal error.
 /// 
-/// 
 /// # Examples
 /// 
 /// ```
