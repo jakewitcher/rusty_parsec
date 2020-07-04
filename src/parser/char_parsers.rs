@@ -2,14 +2,54 @@ use super::{ParserState, ParserSuccess, ParserFailure, Parser};
 
 use num_traits::{Float, PrimInt};
 
+/// ```p_char``` takes a character as an argument and returns a parser success with the expected char value if the next character in the input string is a match, otherwise it returns a parser failure.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = Ok(ParserSuccess::new('a', Position::new(1, 2, 1)));
+/// 
+/// let actual = p_char('a').run("abc".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn p_char(target: char) -> Parser<char> {
     char_return(target, target)
 }
 
+/// ```skip_char``` takes a character as an argument and returns a parser success of ```()``` if the next character in the input string is a match, otherwise it returns a parser failure.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = Ok(ParserSuccess::new((), Position::new(1, 2, 1)));
+/// 
+/// let actual = skip_char('a').run("abc".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn skip_char(target: char) -> Parser<()> {
     char_return(target, ())
 }
 
+
+/// ```char_return``` takes a character as an argument and returns a parser success of the value supplied as the second argument of the function if the next character in the input string is a match, otherwise it returns a parser failure.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = Ok(ParserSuccess::new(true, Position::new(1, 2, 1)));
+/// 
+/// let actual = char_return('a', true).run("abc".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn char_return<T>(target: char, return_value: T) -> Parser<T> 
 where T: 'static
 {
