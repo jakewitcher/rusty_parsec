@@ -82,6 +82,20 @@ where T: 'static
     Parser::new(parser_fn)
 }
 
+/// ```satisfy``` takes a function of type ```(char) -> bool``` and returns a parser success if the next character in the input string returns true when the function is applied. Otherwise ```satisfy``` returns a parser failure.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = Ok(ParserSuccess::new('c', Position::new(1, 2, 1)));
+/// 
+/// let actual = satisfy(Box::new(|c:char|c.is_ascii_lowercase()))
+///     .run("cat".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<char> {
     let parser_fn =
         Box::new(
@@ -105,6 +119,20 @@ pub fn satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<char> {
     Parser::new(parser_fn)
 }
 
+/// ```many_satisfy``` takes a function of type ```(char) -> bool``` and repeatedly applies the parser to every successive character in the input string until the function returns false. ```many_satisfy``` then returns all characters successfully parsed as a String. If no characters return true, ```many_satisfy``` returns an empty string.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = Ok(ParserSuccess::new("aaa".to_string(), Position::new(1, 4, 3)));
+/// 
+/// let actual = many_satisfy(Box::new(|c:char|c == 'a'))
+///     .run("aaabbb".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn many_satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<String> {
     let parser_fn =
         Box::new(
