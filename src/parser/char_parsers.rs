@@ -11,7 +11,9 @@ use num_traits::{Float, PrimInt};
 /// 
 /// let expected = Ok(ParserSuccess::new('a', Position::new(1, 2, 1)));
 /// 
-/// let actual = p_char('a').run("abc".to_string());
+/// let actual = 
+///     p_char('a')
+///         .run("abc".to_string());
 /// 
 /// assert_eq!(expected, actual);
 /// ```
@@ -28,7 +30,9 @@ pub fn p_char(target: char) -> Parser<char> {
 /// 
 /// let expected = Ok(ParserSuccess::new((), Position::new(1, 2, 1)));
 /// 
-/// let actual = skip_char('a').run("abc".to_string());
+/// let actual = 
+///     skip_char('a')
+///         .run("abc".to_string());
 /// 
 /// assert_eq!(expected, actual);
 /// ```
@@ -46,7 +50,9 @@ pub fn skip_char(target: char) -> Parser<()> {
 /// 
 /// let expected = Ok(ParserSuccess::new(true, Position::new(1, 2, 1)));
 /// 
-/// let actual = char_return('a', true).run("abc".to_string());
+/// let actual = 
+///     char_return('a', true)
+///         .run("abc".to_string());
 /// 
 /// assert_eq!(expected, actual);
 /// ```
@@ -91,8 +97,9 @@ where T: 'static
 /// 
 /// let expected = Ok(ParserSuccess::new('c', Position::new(1, 2, 1)));
 /// 
-/// let actual = satisfy(Box::new(|c:char|c.is_ascii_lowercase()))
-///     .run("cat".to_string());
+/// let actual = 
+///     satisfy(Box::new(|c:char|c.is_ascii_lowercase()))
+///         .run("cat".to_string());
 /// 
 /// assert_eq!(expected, actual);
 /// ```
@@ -128,8 +135,9 @@ pub fn satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<char> {
 /// 
 /// let expected = Ok(ParserSuccess::new("aaa".to_string(), Position::new(1, 4, 3)));
 /// 
-/// let actual = many_satisfy(Box::new(|c:char|c == 'a'))
-///     .run("aaabbb".to_string());
+/// let actual = 
+///     many_satisfy(Box::new(|c:char|c == 'a'))
+///         .run("aaabbb".to_string());
 /// 
 /// assert_eq!(expected, actual);
 /// ```
@@ -154,14 +162,59 @@ pub fn many_satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<String> {
     Parser::new(parser_fn)
 }
 
+/// ```p_string``` takes a String as an argument and returns a parser success with the expected String value if the next string slice of the input string is a match, otherwise it returns a parser failure.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = Ok(ParserSuccess::new("hello".to_string(), Position::new(1, 6, 5)));
+/// 
+/// let actual = 
+///     p_string("hello".to_string())
+///         .run("hello, world".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn p_string(target: String) -> Parser<String> {
     string_return(target.clone(), target)
 }
 
+/// ```skip_string``` takes a String as an argument and returns a parser success of ```()``` if the next string slice of the input string is a match, otherwise it returns a parser failure.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = Ok(ParserSuccess::new((), Position::new(1, 6, 5)));
+/// 
+/// let actual =  
+///     skip_string("hello".to_string())
+///         .run("hello, world".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn skip_string(target: String) -> Parser<()> {
     string_return(target, ())
 }
 
+/// ```string_return``` takes a String as an argument and returns a parser success of the value supplied as the second argument of the function if the next string slice of the input string is a match, otherwise it returns a parser failure.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = Ok(ParserSuccess::new(true, Position::new(1, 6, 5)));
+/// 
+/// let actual = 
+///     string_return("hello".to_string(), true)
+///         .run("hello, world".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn string_return<T>(target: String, return_value: T) -> Parser<T> 
 where T: 'static
 {
