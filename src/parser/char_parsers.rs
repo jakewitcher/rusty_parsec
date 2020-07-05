@@ -389,10 +389,38 @@ where T: PrimInt + 'static
     Parser::new(parser_fn)
 }
 
+/// ```p_f32``` tries to parse the input string as a floating point number and if it succeeds, returns the result as an f32 floating point.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = Ok(ParserSuccess::new(123.35, Position::new(1, 7, 6)));
+/// 
+/// let actual = 
+///     p_f32().run("123.35abc".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn p_f32() -> Parser<f32> {
     p_float(Box::new(|maybe_float: String| maybe_float.parse::<f32>()))
 }
 
+/// ```p_f64``` tries to parse the input string as a floating point number and if it succeeds, returns the result as an f64 floating point.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = Ok(ParserSuccess::new(123.35, Position::new(1, 7, 6)));
+/// 
+/// let actual = 
+///     p_f64().run("123.35abc".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn p_f64() -> Parser<f64> {
     p_float(Box::new(|maybe_float: String| maybe_float.parse::<f64>()))
 }
