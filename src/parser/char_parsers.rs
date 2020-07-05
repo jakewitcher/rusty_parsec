@@ -463,6 +463,23 @@ where T: Float + 'static
     Parser::new(parser_fn)
 }
 
+/// ```ws``` parses zero or more successive whitespace characters, returning ```()``` as the parser result.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = Ok(ParserSuccess::new(('a', 'b'), Position::new(3, 2, 10)));
+/// 
+/// let actual = 
+///     ws().take_next(p_char('a'))
+///         .take_prev(ws())
+///         .and(p_char('b'))
+///         .run("  \na\t  \r\nb".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn ws() -> Parser<()> {
     let parser_fn =
         Box::new(
