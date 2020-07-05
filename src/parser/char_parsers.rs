@@ -247,27 +247,111 @@ where T: 'static
     Parser::new(parser_fn)
 }
 
+/// ```p_i32``` tries to parse the input string as an integer and if it succeeds, returns the result as an i32 integer.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = Ok(ParserSuccess::new(123, Position::new(1, 4, 3)));
+/// 
+/// let actual = 
+///     p_u32().run("123abc".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn p_i32() -> Parser<i32> {
     p_int(Box::new(|maybe_int: String| maybe_int.parse::<i32>()))
 }
 
+/// ```p_i64``` tries to parse the input string as an integer and if it succeeds, returns the result as an i64 integer.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = Ok(ParserSuccess::new(123, Position::new(1, 4, 3)));
+/// 
+/// let actual = 
+///     p_i64().run("123abc".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn p_i64() -> Parser<i64> {
     p_int(Box::new(|maybe_int: String| maybe_int.parse::<i64>()))
 }
 
+/// ```p_u32``` tries to parse the input string as an integer and if it succeeds, returns the result as an u32 integer.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = Ok(ParserSuccess::new(123, Position::new(1, 4, 3)));
+/// 
+/// let actual = 
+///     p_u32().run("123abc".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn p_u32() -> Parser<u32> {
     p_int(Box::new(|maybe_int: String| maybe_int.parse::<u32>()))
 }
 
+/// ```p_u64``` tries to parse the input string as an integer and if it succeeds, returns the result as an u64 integer.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = Ok(ParserSuccess::new(123, Position::new(1, 4, 3)));
+/// 
+/// let actual = 
+///     p_u64().run("123abc".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn p_u64() -> Parser<u64> {
     p_int(Box::new(|maybe_int: String| maybe_int.parse::<u64>()))
 }
 
+/// ```p_isize``` tries to parse the input string as an integer and if it succeeds, returns the result as an isize integer.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = Ok(ParserSuccess::new(123, Position::new(1, 4, 3)));
+/// 
+/// let actual = 
+///     p_isize().run("123abc".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
 pub fn p_isize() -> Parser<isize> {
     p_int(Box::new(|maybe_int: String| maybe_int.parse::<isize>()))
 }
 
-pub fn p_iusize() -> Parser<usize> {
+/// ```p_usize``` tries to parse the input string as an integer and if it succeeds, returns the result as an usize integer.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rusty_parsec::*;
+/// 
+/// let expected = Ok(ParserSuccess::new(123, Position::new(1, 4, 3)));
+/// 
+/// let actual = 
+///     p_usize().run("123abc".to_string());
+/// 
+/// assert_eq!(expected, actual);
+/// ```
+pub fn p_usize() -> Parser<usize> {
     p_int(Box::new(|maybe_int: String| maybe_int.parse::<usize>()))
 }
 
