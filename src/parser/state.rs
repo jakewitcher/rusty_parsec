@@ -1,11 +1,13 @@
 use super::result::Position;
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum LineStart {
+enum LineStart {
     FirstLine,
     Index(usize),
 }
 
+/// ```ParserState``` is used to track the state of the parser. It maintains a reference to the string value being parsed and the current position of the parser as well as a history of all previous positions. 
+/// ```ParserState``` also includes functionality for moving the current position of the parser forward and backward as well as tracking line and column numbers.
 pub struct ParserState {
     input: String,
     current_slice_start: usize,
@@ -16,6 +18,7 @@ pub struct ParserState {
 }
 
 impl ParserState {
+    /// ```new``` creates a new instance of the ```ParserState``` struct.
     pub fn new(input: String) -> ParserState {
 
         ParserState {
@@ -28,10 +31,26 @@ impl ParserState {
         }
     }
 
+    /// ```len``` returns the length of the input being parsed.
     pub fn len(&self) -> usize {
         self.input.len()
     }
 
+    /// ```get_remaining_input``` returns a slice of the input from the current position of the parser to the end of the input string. 
+    /// ```get_remaining_input``` panics if the current position of the parser has exceeded the length of the input.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use rusty_parsec::*;
+    /// 
+    /// let mut state = ParserState::new("hello, world".to_string());
+    ///
+    /// state.move_state_forward("hello".len());
+    /// let remaining_input = state.get_remaining_input();
+    ///
+    /// assert_eq!(", world", remaining_input);
+    /// ```
     pub fn get_remaining_input(&self) -> &str {
         if self.current_slice_start > self.len() {
             panic!(
@@ -44,6 +63,29 @@ impl ParserState {
         &self.input[self.current_slice_start..]
     }
 
+    /// ```move_state_forward``` moves the current position of the parser forward by the number of indicies specified with the ```increment``` parameter.
+    /// When the position of the parser is moved, the characters between the current parser position and the new parser position are checked for newlines so that 
+    /// the line number is tracked as well.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use rusty_parsec::*;
+    /// 
+    /// let mut state = ParserState::new("hello\nworld".to_string());
+    ///        
+    /// state.move_state_forward("hello\nwo".len());
+    ///
+    /// let position = state.get_position();
+    /// 
+    /// let row = 2;
+    /// let column = 3;
+    /// let index = 8;
+    /// 
+    /// let expected = Position::new(row, column, index);
+    ///
+    /// assert_eq!(expected, position);
+    /// ```
     pub fn move_state_forward(&mut self, increment: usize) {
         if self.current_slice_start + increment > self.len() {
             panic!(
@@ -118,10 +160,13 @@ impl ParserState {
         }
     }
 
+    /// ```mark``` sets a marker for the current position of the parser. This marker is used by parsers that allow for the state to be reverted to
+    /// an earlier position if a fatal error occurs.
     pub fn mark(&mut self) {
         self.marker = Some(self.current_slice_start);
     }
 
+    /// ```revert``` uses the marker set by ```mark``` to move the position of the parser to a previous state.
     pub fn revert(&mut self) {
         match self.marker {
             Some(marker) => {
@@ -134,11 +179,30 @@ impl ParserState {
         }
     }
 
+    /// ```remove_mark``` removes any markers that have been set by ```mark```.
     pub fn remove_mark(&mut self) {
         self.marker = None;
     }
 
+    /// ```get_slice``` attempts to get a slice of the input to be evaluated by a parser function. The starting position of the slice
+    /// is determined by the current position of the parser state and the end point of the slice is determined by the caller.
+    /// ```get_slice``` returns ```None``` if the slice requested exceeds the length of the input string.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use rusty_parsec::*;
+    /// 
+    /// let mut state = ParserState::new("hello, world".to_string());
+    /// state.move_state_forward("hello, ".len());
+    /// 
+    /// let slice = state.get_slice(4);
+    /// let expected = Some("worl".to_string());
+    /// 
+    /// assert_eq!(expected, slice);
+    /// ```
     pub fn get_slice(&self, length: usize) -> Option<String> {
+
         let slice_end = self.current_slice_start + length;
 
         if slice_end > self.len() {
@@ -149,6 +213,22 @@ impl ParserState {
         }
     }
 
+    /// ```get_position``` returns the current position of the parser state using the ```Position``` struct. 
+    /// ```Position``` includes the line number, column number, and index of the current parser state.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use rusty_parsec::*;
+    /// 
+    /// let mut state = ParserState::new("hello, world".to_string());
+    /// state.move_state_forward("hello, ".len());
+    /// 
+    /// let position = state.get_position();
+    /// let expected = Position::new(1, 8, 7);
+    /// 
+    /// assert_eq!(expected, position);
+    /// ```
     pub fn get_position(&self) -> Position {
         Position::new(self.get_line_number(), self.get_column_number(), self.get_index())
     }
