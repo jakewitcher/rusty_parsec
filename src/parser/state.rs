@@ -19,7 +19,7 @@ pub struct ParserState {
 
 impl ParserState {
     /// ```new``` creates a new instance of the ```ParserState``` struct.
-    pub fn new(input: String) -> ParserState {
+    pub(in crate::parser) fn new(input: String) -> ParserState {
 
         ParserState {
             input,
@@ -32,7 +32,7 @@ impl ParserState {
     }
 
     /// ```len``` returns the length of the input being parsed.
-    pub fn len(&self) -> usize {
+    pub(in crate::parser) fn len(&self) -> usize {
         self.input.len()
     }
 
@@ -51,7 +51,7 @@ impl ParserState {
     ///
     /// assert_eq!(", world", remaining_input);
     /// ```
-    pub fn get_remaining_input(&self) -> &str {
+    pub(in crate::parser) fn get_remaining_input(&self) -> &str {
         if self.current_slice_start > self.len() {
             panic!(
                 format!("starting slice at {} will exceed the input length of {}",
@@ -86,7 +86,7 @@ impl ParserState {
     ///
     /// assert_eq!(expected, position);
     /// ```
-    pub fn move_state_forward(&mut self, increment: usize) {
+    pub(in crate::parser) fn move_state_forward(&mut self, increment: usize) {
         if self.current_slice_start + increment > self.len() {
             panic!(
                 format!("incrementing starting index {} by {} will exceed the input length of {}",
@@ -162,12 +162,12 @@ impl ParserState {
 
     /// ```mark``` sets a marker for the current position of the parser. This marker is used by parsers that allow for the state to be reverted to
     /// an earlier position if a fatal error occurs.
-    pub fn mark(&mut self) {
+    pub(in crate::parser) fn mark(&mut self) {
         self.marker = Some(self.current_slice_start);
     }
 
     /// ```revert``` uses the marker set by ```mark``` to move the position of the parser to a previous state.
-    pub fn revert(&mut self) {
+    pub(in crate::parser) fn revert(&mut self) {
         match self.marker {
             Some(marker) => {
                 while self.current_slice_start != marker {
@@ -180,7 +180,7 @@ impl ParserState {
     }
 
     /// ```remove_mark``` removes any markers that have been set by ```mark```.
-    pub fn remove_mark(&mut self) {
+    pub(in crate::parser) fn remove_mark(&mut self) {
         self.marker = None;
     }
 
@@ -201,7 +201,7 @@ impl ParserState {
     /// 
     /// assert_eq!(expected, slice);
     /// ```
-    pub fn get_slice(&self, length: usize) -> Option<String> {
+    pub(in crate::parser) fn get_slice(&self, length: usize) -> Option<String> {
 
         let slice_end = self.current_slice_start + length;
 
@@ -229,7 +229,7 @@ impl ParserState {
     /// 
     /// assert_eq!(expected, position);
     /// ```
-    pub fn get_position(&self) -> Position {
+    pub(in crate::parser) fn get_position(&self) -> Position {
         Position::new(self.get_line_number(), self.get_column_number(), self.get_index())
     }
 
