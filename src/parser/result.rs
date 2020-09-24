@@ -37,19 +37,7 @@ pub mod success {
         }
     
         /// ```map_result``` maps the result value returned by the successful parsing of the input string to a different type based on the mapping function parameter.
-        ///
-        /// # Examples
-        /// 
-        /// ```
-        /// use rusty_parsec::*;
-        /// 
-        /// let success = ParserSuccess::new(15, Position::new(1, 4, 3));
-        ///
-        /// let mapped_success = success.map_result(|n| if n > 10 { true } else { false });
-        ///
-        /// assert_eq!(true, mapped_success.get_result());
-        /// ```
-        pub fn map_result<U>(self, f: impl Fn(T) -> U) -> ParserSuccess<U> {
+        pub(in crate::parser) fn map_result<U>(self, f: impl Fn(T) -> U) -> ParserSuccess<U> {
             let position = self.get_position();
             let new_result = f(self.get_result());
     
@@ -57,37 +45,12 @@ pub mod success {
         }
     
         /// ```with_result``` returns a new ```ParserSuccess``` struct, replacing the parser result value with the ```new_result``` parameter.
-        ///
-        /// # Examples
-        /// 
-        /// ```
-        /// use rusty_parsec::*;
-        /// 
-        /// let success = ParserSuccess::new(15, Position::new(1, 4, 3));
-        ///
-        /// let new_success = success.with_result(true);
-        ///
-        /// assert_eq!(true, new_success.get_result());
-        /// ```
-        pub fn with_result<U>(self, new_result: U) -> ParserSuccess<U> {
+        pub(in crate::parser) fn with_result<U>(self, new_result: U) -> ParserSuccess<U> {
             ParserSuccess::new(new_result, self.get_position())
         }
     
         /// ```with_position``` returns a new ```ParserSuccess``` struct, replacing the position with the ```new_position``` parameter.
-        ///
-        /// # Examples
-        /// 
-        /// ```
-        /// use rusty_parsec::*;
-        /// 
-        /// let success = ParserSuccess::new(15, Position::new(1, 4, 3));
-        /// let new_position = Position::new(2, 1, 15);
-        ///
-        /// let new_success = success.with_position(new_position);
-        ///
-        /// assert_eq!(new_position, new_success.get_position());
-        /// ```
-        pub fn with_position(self, new_position: Position) -> ParserSuccess<T> {
+        pub(in crate::parser) fn with_position(self, new_position: Position) -> ParserSuccess<T> {
             ParserSuccess::new(self.get_result(), new_position)
         }
     
@@ -175,36 +138,12 @@ pub mod failure {
         /// ```to_err``` changes the ```FailureSeverity``` of a ```ParserFailure``` to the ```Error``` type. This is only used when
         /// a parser capable of rolling back the parser state encounters a fatal error but can recover the initial parser state before the failure.
         /// The ```ParserFailure``` returned by a parser with this capabality can safely return an ```Error``` type after reverting the parser state.
-        ///
-        /// # Examples
-        /// 
-        /// ```
-        /// use rusty_parsec::*;
-        /// 
-        /// let fatal_failure = ParserFailure::new_fatal_err("hello".to_string(), None, Position::new(1, 4, 3));
-        /// /// assert!(failure.is_fatal());
-        /// 
-        /// let failure = fatal_failure.to_err();
-        /// assert!(!failure.is_fatal());
-        /// ```
-        pub fn to_err(self) -> ParserFailure {
+        pub(in crate::parser) fn to_err(self) -> ParserFailure {
             ParserFailure::new_err(self.expected, self.actual, self.position)
         }
     
         /// ```to_fatal_err``` changes the ```FailureSeverity``` of a ```ParserFailure``` to the ```Fatal``` type.
-        ///
-        /// # Examples
-        /// 
-        /// ```
-        /// use rusty_parsec::*;
-        /// 
-        /// let failure = ParserFailure::new_err("hello".to_string(), None, Position::new(1, 4, 3));
-        /// /// assert!(!failure.is_fatal());
-        /// 
-        /// let fatal_failure = failure.to_fatal_err();
-        /// assert!(fatal_failure.is_fatal());
-        /// ```
-        pub fn to_fatal_err(self) -> ParserFailure {
+        pub(in crate::parser) fn to_fatal_err(self) -> ParserFailure {
             ParserFailure::new_fatal_err(self.expected, self.actual, self.position)
         }
     
@@ -227,7 +166,7 @@ pub mod failure {
     
         /// ```to_err_msg``` takes a ```ParserFailure``` struct and returns the information it contains in a user friendly way.
         /// This method is primarily used for error messaging to help with debugging when a parser fails.
-        pub fn to_err_msg(&self) -> String {
+        pub(in crate::parser) fn to_err_msg(&self) -> String {
             match &self.actual {
                 Some(actual) => 
                     format!(
