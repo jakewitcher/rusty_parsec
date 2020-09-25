@@ -6,11 +6,11 @@ pub mod state;
 pub use state::ParserState;
 pub use result::{Position, ParserSuccess, ParserFailure, ParserResult, FailureSeverity};
 
-/// ```ParserFn``` is a type alias for the closure returned by all parser functions and combinators. It takes a mutable reference
-/// to a ```ParserState``` struct and returns a ```ParserResult``` which can either be a ```ParserSuccess``` or a ```ParserFailure```.
+/// `ParserFn` is a type alias for the closure returned by all parser functions and combinators. It takes a mutable reference
+/// to a `ParserState` struct and returns a `ParserResult` which can either be a `ParserSuccess` or a `ParserFailure`.
 pub type ParserFn<T> = Box<dyn FnOnce(&mut ParserState) -> ParserResult<T>>;
 
-/// ```Parser``` has a single field contianing a ```ParserFn```. This struct is the primary way simple parsing functions are composed into
+/// `Parser` has a single field contianing a `ParserFn`. This struct is the primary way simple parsing functions are composed into
 /// more complex ones. 
 pub struct Parser<T>
 where T: 'static
@@ -19,21 +19,21 @@ where T: 'static
 }
 
 impl<T> Parser<T> {
-    /// ```new``` creates a new instance of the ```Parser``` struct.
+    /// `new` creates a new instance of the `Parser` struct.
     pub(in crate::parser) fn new(parser_fn: ParserFn<T>) -> Parser<T> {
         Parser { parser_fn }
     }
 
-    /// ```parse``` is the method used to apply the parser function to a mutable reference of the ```ParserState```.
+    /// `parse` is the method used to apply the parser function to a mutable reference of the `ParserState`.
     pub(in crate::parser) fn parse(self, state: &mut ParserState) -> ParserResult<T> {
         let p =self.parser_fn;
         p(state)
     }
 
-    /// ```and``` applies the parser contained in the current parser struct, and if it succeeds, it then applies the ```other``` parser parameter.
-    /// If both parsers succeed, the results of both are returned in a tuple as the value of a ```ParserSuccess``` struct. If the first parser fails 
-    /// without changing the parser state, a ```ParserFailure``` will be returned as an ```Error```. If the first parser fails after changing the parser state
-    /// or if the second parser fails, a ```ParserFailure``` is returned as a ```FatalError```.
+    /// `and` applies the parser contained in the current parser struct, and if it succeeds, it then applies the parser assigned to the `other` parameter.
+    /// If both parsers succeed, the results of both are returned in a tuple as the value of a `ParserSuccess` struct. If the first parser fails 
+    /// without changing the parser state, a `ParserFailure` will be returned as an `Error`. If the first parser fails after changing the parser state
+    /// or if the second parser fails, a `ParserFailure` is returned as a `FatalError`.
     /// 
     /// # Examples
     /// 
@@ -43,9 +43,12 @@ impl<T> Parser<T> {
     /// let p_A = p_char('A');
     /// let p_B = p_char('B');
     ///
-    /// let expected = Ok(ParserSuccess::new(('A', 'B'), Position::new(1, 3, 2)));
+    /// let expected = Ok(ParserSuccess::new(
+    ///     ('A', 'B'), 
+    ///     Position::new(1, 3, 2)
+    /// ));
     /// 
-    /// let actual = p_A.and(p_B).run("AB".to_string());
+    /// let actual = p_A.and(p_B).run(String::from("AB"));
     /// 
     /// assert_eq!(expected, actual);
     /// ```
@@ -73,10 +76,10 @@ impl<T> Parser<T> {
         Parser::new(parser_fn)
     }
 
-    /// ```and_try``` applies the parser contained in the current parser struct, and if it succeeds, it then applies the ```other``` parser parameter.
-    /// If both parsers succeed, the results of both are returned in a tuple as the value of a ```ParserSuccess``` struct. If either parser fails, regardless
-    /// of whether or not the failure was fatal, the position of the ```ParserState``` is reset and a ```ParserFailure``` with a severity of ```Error```
-    /// is returned.
+    /// `and_try` applies the parser contained in the current parser struct, and if it succeeds, it then applies the parser assigned to the `other` parameter.
+    /// If both parsers succeed, the results of both are returned in a tuple as the value of a `ParserSuccess` struct. Parser failures are handled
+    /// the same as `and` except when the first parser succeeds but the second parser fails. `and` will return a `FatalError` when this happens
+    /// whereas `and_try` will return a regular `Error` if the second parser fails without changing the `ParserState`.
     /// 
     /// # Examples
     /// 
@@ -84,11 +87,29 @@ impl<T> Parser<T> {
     /// use rusty_parsec::*;
     /// 
     /// let p_A = p_char('A');
-    /// let p_B = p_char('B');
+    /// let p_BC = p_char('B').and(p_char('C'));
     ///
-    /// let expected = Ok(ParserSuccess::new(('A', 'B'), Position::new(1, 3, 2)));
+    /// let expected = Err(ParserFailure::new_err(
+    ///     String::from("B"), 
+    ///     Some(String::from("C")),
+    ///     Position::new(1, 2, 1)
+    /// ));
     /// 
-    /// let actual = p_A.and_try(p_B).run("AB".to_string());
+    /// let actual = p_A.and_try(p_BC).run(String::from("ACD"));
+    /// 
+    /// assert_eq!(expected, actual);
+    /// 
+    /// 
+    /// let p_A = p_char('A');
+    /// let p_BC = p_char('B').and(p_char('C'));
+    ///
+    /// let expected = Err(ParserFailure::new_fatal_err(
+    ///     String::from("C"), 
+    ///     Some(String::from("D")),
+    ///     Position::new(1, 3, 2)
+    /// ));
+    /// 
+    /// let actual = p_A.and_try(p_BC).run(String::from("ABD"));
     /// 
     /// assert_eq!(expected, actual);
     /// ```
@@ -130,6 +151,40 @@ impl<T> Parser<T> {
         Parser::new(parser_fn)
     }
 
+    /// `or` applies the parser contained in the current parser struct, and if it succeeds, returns the results of the parser as a `ParserSuccess`.
+    /// However if the first parser fails, `or` then tries to apply the parser assigned to the `other` parameter. If the second parser succeeds, the result
+    /// value is returned as a `ParserSuccess`. If both parsers fail, `or` returns a `ParserFailure`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use rusty_parsec::*;
+    /// 
+    /// let p_A = p_char('A');
+    /// let p_B = p_char('B');
+    ///
+    /// let expected = Ok(ParserSuccess::new(
+    ///     'A', 
+    ///     Position::new(1, 2, 1)
+    /// ));
+    /// 
+    /// let actual = p_A.or(p_B).run(String::from("A"));
+    /// 
+    /// assert_eq!(expected, actual);
+    /// 
+    /// 
+    /// let p_A = p_char('A');
+    /// let p_B = p_char('B');
+    ///
+    /// let expected = Ok(ParserSuccess::new(
+    ///     'B', 
+    ///     Position::new(1, 2, 1)
+    /// ));
+    /// 
+    /// let actual = p_A.or(p_B).run(String::from("B"));
+    /// 
+    /// assert_eq!(expected, actual);
+    /// ```
     pub fn or(self, other: Parser<T>) -> Parser<T>
     {
         let parser_fn =
