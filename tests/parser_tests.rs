@@ -112,22 +112,25 @@ fn and_try_run_simple_parsers_success() {
 }
 
 #[test]
-fn and_try_run_simple_parsers_fails_with_error_at_second_parser() {
+fn and_try_run_complex_parsers_fails_with_error_at_second_parser() {
     let expected = Err(ParserFailure::new_err(
-        String::from("b"), 
-        Some(String::from("c")), 
-        Position::new(1, 2, 1)
+        String::from("c"), 
+        Some(String::from("d")), 
+        Position::new(1, 3, 2)
     ));
 
-    let actual = p_char('a')
-        .and_try(p_char('b'))
-        .run(String::from("ac"));
+    let first = p_char('a').and(p_char('b'));
+    let second = p_char('c').and(p_char('d'));
+
+    let actual = first
+        .and_try(second)
+        .run(String::from("abdc"));
 
     assert_eq!(expected, actual);
 }
 
 #[test]
-fn and_try_run_simple_parsers_fails_with_fatal_error_at_second_parser() {
+fn and_try_run_complex_parsers_fails_with_fatal_error_at_second_parser() {
     let expected = Err(ParserFailure::new_fatal_err(
         String::from("d"), 
         Some(String::from("e")), 
@@ -249,109 +252,145 @@ fn take_prev_run_simple_parsers_fails_with_fatal_error_at_second_parser() {
 }
 
 #[test]
-fn succeeds_parsing_with_try_take_prev() {
-    let expected = Ok(ParserSuccess::new('a', Position::new(1, 3, 2)));
+fn try_take_prev_run_simple_parsers_success() {
+    let expected = Ok(ParserSuccess::new(
+        'a', 
+        Position::new(1, 3, 2)
+    ));
 
-    let actual = 
-        p_char('a')
-            .try_take_prev(p_char('b'))
-            .run("abc".to_string());
-
-    assert_eq!(expected, actual);
-}
-
-#[test]
-fn fails_parsing_with_try_take_prev() {
-    let expected = Err(ParserFailure::new_err("b".to_string(), Some("c".to_string()), Position::new(1, 2, 1)));
-
-    let actual = 
-        p_char('a')
-            .try_take_prev(p_char('b'))
-            .run("acb".to_string());
+    let actual = p_char('a')
+        .try_take_prev(p_char('b'))
+        .run(String::from("ab"));
 
     assert_eq!(expected, actual);
 }
 
 #[test]
-fn fails_parsing_with_try_take_prev_fatal_err() {
-    let expected = Err(ParserFailure::new_fatal_err("c".to_string(), Some("d".to_string()), Position::new(1, 3, 2)));
+fn try_take_prev_run_complex_parsers_fails_with_error_at_second_parser() {
+    let expected = Err(ParserFailure::new_err(
+        String::from("c"), 
+        Some(String::from("d")), 
+        Position::new(1, 3, 2)
+    ));
 
-    let actual = 
-        p_char('a')
-            .try_take_prev(p_char('b').and(p_char('c')))
-            .run("abd".to_string());
+    let first = p_char('a').and(p_char('b'));
+    let second = p_char('c').and(p_char('d'));
 
-    assert_eq!(expected, actual);
-}
-
-#[test]
-fn succeeds_parsing_with_take_next() {
-    let expected = Ok(ParserSuccess::new('b', Position::new(1, 3, 2)));
-
-    let actual = 
-        p_char('a')
-            .take_next(p_char('b'))
-            .run("abc".to_string());
+    let actual = first
+        .try_take_prev(second)
+        .run(String::from("abde"));
 
     assert_eq!(expected, actual);
 }
 
 #[test]
-fn fails_parsing_with_take_next_at_first_parser() {
-    let expected = Err(ParserFailure::new_err("a".to_string(), Some("b".to_string()), Position::new(1, 1, 0)));
+fn try_take_prev_run_complex_parsers_fails_with_fatal_error_at_second_parser() {
+    let expected = Err(ParserFailure::new_fatal_err(
+        String::from("d"), 
+        Some(String::from("e")), 
+        Position::new(1, 4, 3)
+    ));
 
-    let actual = 
-        p_char('a')
-            .take_next(p_char('b'))
-            .run("bac".to_string());
+    let first = p_char('a').and(p_char('b'));
+    let second = p_char('c').and(p_char('d'));
 
-    assert_eq!(expected, actual);
-}
-
-#[test]
-fn fails_parsing_with_take_next_at_second_parser() {
-    let expected = Err(ParserFailure::new_fatal_err("b".to_string(), Some("c".to_string()), Position::new(1, 2, 1)));
-
-    let actual = 
-        p_char('a')
-            .take_next(p_char('b'))
-            .run("acb".to_string());
+    let actual = first
+        .try_take_prev(second)
+        .run(String::from("abce"));
 
     assert_eq!(expected, actual);
 }
 
 #[test]
-fn succeeds_parsing_with_try_take_next() {
-    let expected = Ok(ParserSuccess::new('b', Position::new(1, 3, 2)));
+fn take_next_run_simple_parsers_success() {
+    let expected = Ok(ParserSuccess::new(
+        'b', 
+        Position::new(1, 3, 2)
+    ));
 
-    let actual = 
-        p_char('a')
-            .try_take_next(p_char('b'))
-            .run("abc".to_string());
-
-    assert_eq!(expected, actual);
-}
-
-#[test]
-fn fails_parsing_with_try_take_next() {
-    let expected = Err(ParserFailure::new_err("b".to_string(), Some("c".to_string()), Position::new(1, 2, 1)));
-
-    let actual = 
-        p_char('a')
-            .try_take_next(p_char('b'))
-            .run("acb".to_string());
+    let actual = p_char('a')
+        .take_next(p_char('b'))
+        .run(String::from("ab"));
 
     assert_eq!(expected, actual);
 }
 
 #[test]
-fn fails_parsing_with_try_take_next_fatal_err() {
-    let expected = Err(ParserFailure::new_fatal_err("c".to_string(), Some("d".to_string()), Position::new(1, 3, 2)));
+fn take_next_run_simple_parser_fails_with_error_at_first_parser() {
+    let expected = Err(ParserFailure::new_err(
+        String::from("a"), 
+        Some(String::from("b")), 
+        Position::new(1, 1, 0)
+    ));
 
-    let actual = 
-        p_char('a')
-            .try_take_next(p_char('b').and(p_char('c')))
-            .run("abd".to_string());
+    let actual = p_char('a')
+        .take_next(p_char('b'))
+        .run(String::from("ba"));
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn take_next_run_simple_parser_fails_with_fatal_error_at_second_parser() {
+    let expected = Err(ParserFailure::new_fatal_err(
+        String::from("b"), 
+        Some(String::from("c")), 
+        Position::new(1, 2, 1)
+    ));
+
+    let actual = p_char('a')
+        .take_next(p_char('b'))
+        .run(String::from("ac"));
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn try_take_next_run_simple_parsers_success() {
+    let expected = Ok(ParserSuccess::new(
+        'b', 
+        Position::new(1, 3, 2)
+    ));
+
+    let actual = p_char('a')
+        .try_take_next(p_char('b'))
+        .run(String::from("ab"));
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn try_take_next_run_complex_parsers_fails_with_error_at_second_parser() {
+    let expected = Err(ParserFailure::new_err(
+        String::from("c"), 
+        Some(String::from("d")), 
+        Position::new(1, 3, 2)
+    ));
+
+    let first = p_char('a').and(p_char('b'));
+    let second = p_char('c').and(p_char('d'));
+
+    let actual = first
+        .try_take_next(second)
+        .run(String::from("abdc"));
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn try_take_next_run_complex_parsers_fails_with_fatal_error_at_second_parser() {
+    let expected = Err(ParserFailure::new_fatal_err(
+        String::from("d"), 
+        Some(String::from("e")), 
+        Position::new(1, 4, 3)
+    ));
+
+    let first = p_char('a').and(p_char('b'));
+    let second = p_char('c').and(p_char('d'));
+
+    let actual = first
+        .try_take_next(second)
+        .run(String::from("abce"));
 
     assert_eq!(expected, actual);
 }

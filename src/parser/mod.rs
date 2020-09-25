@@ -48,7 +48,9 @@ impl<T> Parser<T> {
     ///     Position::new(1, 3, 2)
     /// ));
     /// 
-    /// let actual = p_A.and(p_B).run(String::from("AB"));
+    /// let actual = p_A
+    ///     .and(p_B)
+    ///     .run(String::from("AB"));
     /// 
     /// assert_eq!(expected, actual);
     /// ```
@@ -95,7 +97,9 @@ impl<T> Parser<T> {
     ///     Position::new(1, 2, 1)
     /// ));
     /// 
-    /// let actual = p_A.and_try(p_BC).run(String::from("ACD"));
+    /// let actual = p_A
+    ///     .and_try(p_BC)
+    ///     .run(String::from("ACD"));
     /// 
     /// assert_eq!(expected, actual);
     /// 
@@ -109,7 +113,9 @@ impl<T> Parser<T> {
     ///     Position::new(1, 3, 2)
     /// ));
     /// 
-    /// let actual = p_A.and_try(p_BC).run(String::from("ABD"));
+    /// let actual = p_A
+    ///     .and_try(p_BC)
+    ///     .run(String::from("ABD"));
     /// 
     /// assert_eq!(expected, actual);
     /// ```
@@ -168,7 +174,9 @@ impl<T> Parser<T> {
     ///     Position::new(1, 2, 1)
     /// ));
     /// 
-    /// let actual = p_A.or(p_B).run(String::from("A"));
+    /// let actual = p_A
+    ///     .or(p_B)
+    ///     .run(String::from("A"));
     /// 
     /// assert_eq!(expected, actual);
     /// 
@@ -181,7 +189,9 @@ impl<T> Parser<T> {
     ///     Position::new(1, 2, 1)
     /// ));
     /// 
-    /// let actual = p_A.or(p_B).run(String::from("B"));
+    /// let actual = p_A
+    ///     .or(p_B)
+    ///     .run(String::from("B"));
     /// 
     /// assert_eq!(expected, actual);
     /// ```
@@ -205,6 +215,30 @@ impl<T> Parser<T> {
         Parser::new(parser_fn)
     }
 
+    /// `take_prev` applies the parser contained in the current parser struct, and if it succeeds, it then applies the parser assigned to the `other` parameter.
+    /// If both parsers succeed, the results of the first parser are returned as a `ParserSuccess` struct. If the first parser fails 
+    /// without changing the parser state, a `ParserFailure` will be returned as an `Error`. If the first parser fails after changing the parser state
+    /// or if the second parser fails, a `ParserFailure` is returned as a `FatalError`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use rusty_parsec::*;
+    /// 
+    /// let p_A = p_char('A');
+    /// let p_B = p_char('B');
+    ///
+    /// let expected = Ok(ParserSuccess::new(
+    ///     'A', 
+    ///     Position::new(1, 3, 2)
+    /// ));
+    /// 
+    /// let actual = p_A
+    ///     .take_prev(p_B)
+    ///     .run(String::from("AB"));
+    /// 
+    /// assert_eq!(expected, actual);
+    /// ```
     pub fn take_prev<U>(self, other: Parser<U>) -> Parser<T>
     where U: 'static
     {
@@ -227,6 +261,47 @@ impl<T> Parser<T> {
         Parser::new(parser_fn)
     }
 
+    /// `try_take_prev` applies the parser contained in the current parser struct, and if it succeeds, it then applies the parser assigned to the `other` parameter.
+    /// If both parsers succeed, the results of the first parser are returned as a `ParserSuccess` struct. Parser failures are handled
+    /// the same as `take_prev` except when the first parser succeeds but the second parser fails. `take_prev` will return a `FatalError` when this happens
+    /// whereas `try_take_prev` will return a regular `Error` if the second parser fails without changing the `ParserState`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use rusty_parsec::*;
+    /// 
+    /// let p_A = p_char('A');
+    /// let p_BC = p_char('B').and(p_char('C'));
+    ///
+    /// let expected = Err(ParserFailure::new_err(
+    ///     String::from("B"), 
+    ///     Some(String::from("C")),
+    ///     Position::new(1, 2, 1)
+    /// ));
+    /// 
+    /// let actual = p_A
+    ///     .try_take_prev(p_BC)
+    ///     .run(String::from("ACD"));
+    /// 
+    /// assert_eq!(expected, actual);
+    /// 
+    /// 
+    /// let p_A = p_char('A');
+    /// let p_BC = p_char('B').and(p_char('C'));
+    ///
+    /// let expected = Err(ParserFailure::new_fatal_err(
+    ///     String::from("C"), 
+    ///     Some(String::from("D")),
+    ///     Position::new(1, 3, 2)
+    /// ));
+    /// 
+    /// let actual = p_A
+    ///     .try_take_prev(p_BC)
+    ///     .run(String::from("ABD"));
+    /// 
+    /// assert_eq!(expected, actual);
+    /// ```
     pub fn try_take_prev<U>(self, other: Parser<U>) -> Parser<T>
     where U: 'static
     {
@@ -264,6 +339,30 @@ impl<T> Parser<T> {
         Parser::new(parser_fn)
     }
 
+    /// `take_next` applies the parser contained in the current parser struct, and if it succeeds, it then applies the parser assigned to the `other` parameter.
+    /// If both parsers succeed, the results of the second parser are returned as a `ParserSuccess` struct. If the first parser fails 
+    /// without changing the parser state, a `ParserFailure` will be returned as an `Error`. If the first parser fails after changing the parser state
+    /// or if the second parser fails, a `ParserFailure` is returned as a `FatalError`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use rusty_parsec::*;
+    /// 
+    /// let p_A = p_char('A');
+    /// let p_B = p_char('B');
+    ///
+    /// let expected = Ok(ParserSuccess::new(
+    ///     'B', 
+    ///     Position::new(1, 3, 2)
+    /// ));
+    /// 
+    /// let actual = p_A
+    ///     .take_next(p_B)
+    ///     .run(String::from("AB"));
+    /// 
+    /// assert_eq!(expected, actual);
+    /// ```
     pub fn take_next<U>(self, other: Parser<U>) -> Parser<U>
     where U: 'static
     {
@@ -284,6 +383,47 @@ impl<T> Parser<T> {
         Parser::new(parser_fn)
     }
 
+    /// `try_take_next` applies the parser contained in the current parser struct, and if it succeeds, it then applies the parser assigned to the `other` parameter.
+    /// If both parsers succeed, the results of the first parser are returned as a `ParserSuccess` struct. Parser failures are handled
+    /// the same as `take_next` except when the first parser succeeds but the second parser fails. `take_next` will return a `FatalError` when this happens
+    /// whereas `try_take_next` will return a regular `Error` if the second parser fails without changing the `ParserState`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use rusty_parsec::*;
+    /// 
+    /// let p_A = p_char('A');
+    /// let p_BC = p_char('B').and(p_char('C'));
+    ///
+    /// let expected = Err(ParserFailure::new_err(
+    ///     String::from("B"), 
+    ///     Some(String::from("C")),
+    ///     Position::new(1, 2, 1)
+    /// ));
+    /// 
+    /// let actual = p_A
+    ///     .try_take_next(p_BC)
+    ///     .run(String::from("ACD"));
+    /// 
+    /// assert_eq!(expected, actual);
+    /// 
+    /// 
+    /// let p_A = p_char('A');
+    /// let p_BC = p_char('B').and(p_char('C'));
+    ///
+    /// let expected = Err(ParserFailure::new_fatal_err(
+    ///     String::from("C"), 
+    ///     Some(String::from("D")),
+    ///     Position::new(1, 3, 2)
+    /// ));
+    /// 
+    /// let actual = p_A
+    ///     .try_take_next(p_BC)
+    ///     .run(String::from("ABD"));
+    /// 
+    /// assert_eq!(expected, actual);
+    /// ```
     pub fn try_take_next<U>(self, other: Parser<U>) -> Parser<U>
     where U: 'static
     {
