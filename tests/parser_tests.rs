@@ -1,7 +1,7 @@
 use rusty_parsec::*;
 
 #[test]
-fn and_run_simple_parsers_success() {
+fn and_run_simple_parsers_succeeds() {
     let expected = Ok(ParserSuccess::new(
         ('a', 'b'), 
         Position::new(1, 3, 2)
@@ -45,7 +45,7 @@ fn and_run_simple_parsers_fails_with_fatal_error_at_second_parser() {
 }
 
 #[test]
-fn and_run_complex_parsers_success() {
+fn and_run_complex_parsers_succeeds() {
     let expected = Ok(ParserSuccess::new(
         (('a', 'b'), ('c', 'd')), 
         Position::new(1, 5, 4)
@@ -98,7 +98,7 @@ fn and_run_complex_parsers_fails_with_fatal_error_at_second_parser() {
 }
 
 #[test]
-fn and_try_run_simple_parsers_success() {
+fn and_try_run_simple_parsers_succeeds() {
     let expected = Ok(ParserSuccess::new(
         ('a', 'b'), 
         Position::new(1, 3, 2)
@@ -209,7 +209,7 @@ fn or_run_complex_parsers_fails_with_fatal_error_at_second_parser() {
 }
 
 #[test]
-fn take_prev_run_simple_parsers_success() {
+fn take_prev_run_simple_parsers_succeeds() {
     let expected = Ok(ParserSuccess::new(
         'a', 
         Position::new(1, 3, 2)
@@ -252,7 +252,7 @@ fn take_prev_run_simple_parsers_fails_with_fatal_error_at_second_parser() {
 }
 
 #[test]
-fn try_take_prev_run_simple_parsers_success() {
+fn try_take_prev_run_simple_parsers_succeeds() {
     let expected = Ok(ParserSuccess::new(
         'a', 
         Position::new(1, 3, 2)
@@ -302,7 +302,7 @@ fn try_take_prev_run_complex_parsers_fails_with_fatal_error_at_second_parser() {
 }
 
 #[test]
-fn take_next_run_simple_parsers_success() {
+fn take_next_run_simple_parsers_succeeds() {
     let expected = Ok(ParserSuccess::new(
         'b', 
         Position::new(1, 3, 2)
@@ -346,7 +346,7 @@ fn take_next_run_simple_parser_fails_with_fatal_error_at_second_parser() {
 }
 
 #[test]
-fn try_take_next_run_simple_parsers_success() {
+fn try_take_next_run_simple_parsers_succeeds() {
     let expected = Ok(ParserSuccess::new(
         'b', 
         Position::new(1, 3, 2)
