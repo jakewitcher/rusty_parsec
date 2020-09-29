@@ -3,91 +3,141 @@ use common::*;
 use rusty_parsec::*;
 
 #[test]
-fn succeeds_parsing_with_many() {
-    let expected = Ok(ParserSuccess::new(vec![ "hello".to_string(), "hello".to_string(), "hello".to_string()], Position::new(1, 16, 15)));
+fn many_run_simple_parsers_succeeds_with_three_values() {
+    let hello = String::from("hello");
 
-    let actual = many(p_hello).run("hellohellohello".to_string());
+    let expected = Ok(ParserSuccess::new(
+        vec![hello.clone(), hello.clone(), hello.clone()],
+        Position::new(1, 16, 15)
+    ));
 
-    assert_eq!(expected, actual);
-}
-
-#[test]
-fn succeeds_parsing_with_many_returns_empty_vec() {
-    let expected = Ok(ParserSuccess::new(Vec::new(), Position::new(1, 1, 0)));
-
-    let actual = many(p_hello).run("worldworldworld".to_string());
+    let actual = many(p_hello)
+        .run(String::from("hellohellohello"));
 
     assert_eq!(expected, actual);
 }
 
 #[test]
-fn succeeds_parsing_with_many_with_compound_parser() {
-    let expected = Ok(ParserSuccess::new(vec![("abc".to_string(), 123), ("abc".to_string(), 456), ("abc".to_string(), 789)], Position::new(1, 19, 18)));
+fn many_run_simple_parsers_succeeds_when_no_values_returned_by_parser() {
+    let expected = Ok(ParserSuccess::new(
+        Vec::new(), 
+        Position::new(1, 1, 0)
+    ));
 
-    let actual = many(p_abc_123).run("abc123abc456abc789".to_string());
-
-    assert_eq!(expected, actual);
-}
-
-#[test]
-fn fails_parsing_with_many_fatal_err() {
-    let expected = Err(ParserFailure::new_fatal_err("integral value".to_string(), None, Position::new(1, 16, 15)));
-
-    let actual = many(p_abc_123).run("abc123abc456abcdef".to_string());
+    let actual = many(p_hello)
+        .run(String::from("worldworldworld"));
 
     assert_eq!(expected, actual);
 }
 
 #[test]
-fn succeeds_parsing_with_many_1() {
-    let expected = Ok(ParserSuccess::new(vec![ "hello".to_string(), "hello".to_string(), "hello".to_string()], Position::new(1, 16, 15)));
+fn many_run_complex_parsers_succeeds_with_three_values() {
+    let abc = String::from("abc");
 
-    let actual = many_1(p_hello).run("hellohellohello".to_string());
+    let expected = Ok(ParserSuccess::new(
+        vec![(abc.clone(), 123), (abc.clone(), 456), (abc.clone(), 789)], 
+        Position::new(1, 19, 18)
+    ));
 
-    assert_eq!(expected, actual);
-}
-
-#[test]
-fn fails_parsing_with_many_1() {
-    let expected = Err(ParserFailure::new_err("hello".to_string(), Some("world".to_string()), Position::new(1, 1, 0)));
-
-    let actual = many_1(p_hello).run("worldworldworld".to_string());
+    let actual = many(p_abc_123)
+        .run(String::from("abc123abc456abc789"));
 
     assert_eq!(expected, actual);
 }
 
 #[test]
-fn succeeds_parsing_with_skip_many() {
-    let expected = Ok(ParserSuccess::new((), Position::new(1, 16, 15)));
+fn many_run_complex_parsers_fails_with_fatal_error() {
+    let expected = Err(ParserFailure::new_fatal_err(
+        String::from("integral value"), 
+        None, 
+        Position::new(1, 16, 15)
+    ));
 
-    let actual = skip_many(p_hello).run("hellohellohello".to_string());
-
-    assert_eq!(expected, actual);
-}
-
-#[test]
-fn fails_parsing_with_skip_many_fatal_err() {
-    let expected = Err(ParserFailure::new_fatal_err("integral value".to_string(), None, Position::new(1, 16, 15)));
-
-    let actual = skip_many(p_abc_123).run("abc123abc456abcdef".to_string());
+    let actual = many(p_abc_123)
+        .run(String::from("abc123abc456abcdef"));
 
     assert_eq!(expected, actual);
 }
 
 #[test]
-fn succeeds_parsing_with_skip_many_1() {
-    let expected = Ok(ParserSuccess::new((), Position::new(1, 16, 15)));
+fn many_1_run_simple_parsers_succeeds_with_three_values() {
+    let hello = String::from("hello");
 
-    let actual = skip_many_1(p_hello).run("hellohellohello".to_string());
+    let expected = Ok(ParserSuccess::new(
+        vec![hello.clone(), hello.clone(), hello.clone()],
+        Position::new(1, 16, 15)
+    ));
+
+    let actual = many_1(p_hello)
+        .run(String::from("hellohellohello"));
 
     assert_eq!(expected, actual);
 }
 
 #[test]
-fn fails_parsing_with_skip_many_1() {
-    let expected = Err(ParserFailure::new_err("hello".to_string(), None, Position::new(1, 1, 0)));
+fn many_1_run_simple_parsers_fails_with_error_when_no_values_returned_by_parser() {
+    let expected = Err(ParserFailure::new_err(
+        String::from("hello"), 
+        Some(String::from("world")), 
+        Position::new(1, 1, 0)
+    ));
 
-    let actual = skip_many_1(p_hello).run("abc".to_string());
+    let actual = many_1(p_hello)
+        .run(String::from("worldworldworld"));
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn skip_many_run_simple_parsers_succeeds() {
+    let expected = Ok(ParserSuccess::new(
+        (), 
+        Position::new(1, 16, 15)
+    ));
+
+    let actual = skip_many(p_hello)
+        .run(String::from("hellohellohello"));
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn skip_many_run_complex_parsers_fails_with_fatal_error() {
+    let expected = Err(ParserFailure::new_fatal_err(
+        String::from("integral value"), 
+        None, 
+        Position::new(1, 16, 15)
+    ));
+
+    let actual = skip_many(p_abc_123)
+        .run(String::from("abc123abc456abcdef"));
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn skip_many_1_run_simple_parsers_succeeds() {
+    let expected = Ok(ParserSuccess::new(
+        (), 
+        Position::new(1, 16, 15)
+    ));
+
+    let actual = skip_many_1(p_hello)
+        .run(String::from("hellohellohello"));
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn skip_many_1_run_simple_parsers_fails_with_error_when_no_values_returned_by_parser() {
+    let expected = Err(ParserFailure::new_err(
+        String::from("hello"), 
+        None, 
+        Position::new(1, 1, 0)
+    ));
+
+    let actual = skip_many_1(p_hello)
+        .run(String::from("abc"));
 
     assert_eq!(expected, actual);
 }
