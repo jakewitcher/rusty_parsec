@@ -419,7 +419,7 @@ pub fn tuple_4<T, U, V, W>(p1: Parser<T>, p2: Parser<U>, p3: Parser<V>, p4: Pars
 /// ```
 /// # use rusty_parsec::*;
 /// #
-/// # let p_true = p_string("true".to_string())
+/// # let p_true = p_string(String::from("true"))
 /// #     .then_return(true);
 /// #
 /// let expected = Ok(ParserSuccess::new(
