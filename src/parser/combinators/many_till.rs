@@ -11,10 +11,12 @@ use super::{ParserState, ParserSuccess, ParserFailure, Parser};
 /// 
 /// ```
 /// # use rusty_parsec::*;
+/// #
 /// # fn p_true() -> Parser<bool> {
 /// #     p_string(String::from("true"))
 /// #         .then_return(true)
 /// # }
+/// #
 /// let expected = Ok(ParserSuccess::new(
 ///     vec![true, true, true],
 ///     Position::new(1, 16, 15)
@@ -23,7 +25,7 @@ use super::{ParserState, ParserSuccess, ParserFailure, Parser};
 /// let actual = many_till(p_true, p_u32)
 ///     .run(String::from("truetruetrue123"));
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn many_till<T, U>(many_parser: fn() -> Parser<T>, end_parser: fn() -> Parser<U>) -> Parser<Vec<T>> {
     let parser_fn =
@@ -49,10 +51,12 @@ pub fn many_till<T, U>(many_parser: fn() -> Parser<T>, end_parser: fn() -> Parse
 /// 
 /// ```
 /// # use rusty_parsec::*;
+/// #
 /// # fn p_true() -> Parser<bool> {
 /// #     p_string(String::from("true"))
 /// #         .then_return(true)
 /// # }
+/// #
 /// let expected = Err(ParserFailure::new_err(
 ///     String::from("true"), 
 ///     Some(String::from("1234")), 
@@ -62,7 +66,7 @@ pub fn many_till<T, U>(many_parser: fn() -> Parser<T>, end_parser: fn() -> Parse
 /// let actual = many_1_till(p_true, p_u32)
 ///     .run(String::from("1234"));
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn many_1_till<T, U>(many_parser: fn() -> Parser<T>, end_parser: fn() -> Parser<U>) -> Parser<Vec<T>> {
     let parser_fn =
@@ -87,10 +91,12 @@ pub fn many_1_till<T, U>(many_parser: fn() -> Parser<T>, end_parser: fn() -> Par
 /// 
 /// ```
 /// # use rusty_parsec::*;
+/// #
 /// # fn p_true() -> Parser<bool> {
 /// #     p_string(String::from("true"))
 /// #         .then_return(true)
 /// # }
+/// #
 /// let expected = Ok(ParserSuccess::new(
 ///     (), 
 ///     Position::new(1, 16, 15)
@@ -99,7 +105,7 @@ pub fn many_1_till<T, U>(many_parser: fn() -> Parser<T>, end_parser: fn() -> Par
 /// let actual = skip_many_till(p_true, p_u32)
 ///     .run(String::from("truetruetrue123"));
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn skip_many_till<T, U>(many_parser: fn() -> Parser<T>, end_parser: fn() -> Parser<U>) -> Parser<()> {
     let parser_fn =
@@ -125,10 +131,12 @@ pub fn skip_many_till<T, U>(many_parser: fn() -> Parser<T>, end_parser: fn() -> 
 /// 
 /// ```
 /// # use rusty_parsec::*;
+/// #
 /// # fn p_true() -> Parser<bool> {
 /// #     p_string(String::from("true"))
 /// #         .then_return(true)
 /// # }
+/// #
 /// let expected = Err(ParserFailure::new_err(
 ///     String::from("true"), 
 ///     Some(String::from("1234")), 
@@ -138,7 +146,7 @@ pub fn skip_many_till<T, U>(many_parser: fn() -> Parser<T>, end_parser: fn() -> 
 /// let actual = skip_many_1_till(p_true, p_u32)
 ///     .run(String::from("1234"));
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn skip_many_1_till<T, U>(many_parser: fn() -> Parser<T>, end_parser: fn() -> Parser<U>) -> Parser<()> {
     let parser_fn =

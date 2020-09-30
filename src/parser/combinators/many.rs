@@ -10,9 +10,11 @@ use super::{ParserState, ParserSuccess, ParserFailure, Parser};
 /// 
 /// ```
 /// # use rusty_parsec::*;
+/// #
 /// # fn p_hello() -> Parser<String> {
 /// #     p_string(String::from("hello"))
 /// # }
+/// #
 /// let expected = Ok(ParserSuccess::new(
 ///     vec![ String::from("hello"), String::from("hello"), String::from("hello")], 
 ///     Position::new(1, 16, 15)
@@ -21,7 +23,7 @@ use super::{ParserState, ParserSuccess, ParserFailure, Parser};
 /// let actual = many(p_hello)
 ///     .run(String::from("hellohellohello"));
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn many<T>(many_parser: fn() -> Parser<T>) -> Parser<Vec<T>> {
     let parser_fn =
@@ -45,9 +47,11 @@ pub fn many<T>(many_parser: fn() -> Parser<T>) -> Parser<Vec<T>> {
 /// 
 /// ```
 /// # use rusty_parsec::*;
+/// #
 /// # fn p_hello() -> Parser<String> {
 /// #     p_string(String::from("hello"))
 /// # }
+/// #
 /// let expected = Err(ParserFailure::new_err(
 ///     String::from("hello"), 
 ///     Some(String::from("goodb")),
@@ -57,7 +61,7 @@ pub fn many<T>(many_parser: fn() -> Parser<T>) -> Parser<Vec<T>> {
 /// let actual = many_1(p_hello)
 ///     .run(String::from("goodbye"));
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn many_1<T>(many_parser: fn() -> Parser<T>) -> Parser<Vec<T>> {
     let parser_fn =
@@ -87,9 +91,11 @@ pub fn many_1<T>(many_parser: fn() -> Parser<T>) -> Parser<Vec<T>> {
 /// 
 /// ```
 /// # use rusty_parsec::*;
+/// #
 /// # fn p_hello() -> Parser<String> {
 /// #     p_string(String::from("hello"))
 /// # }
+/// #
 /// let expected = Ok(ParserSuccess::new(
 ///     (), 
 ///     Position::new(1, 16, 15)
@@ -98,7 +104,7 @@ pub fn many_1<T>(many_parser: fn() -> Parser<T>) -> Parser<Vec<T>> {
 /// let actual = skip_many(p_hello)
 ///     .run(String::from("hellohellohello"));
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn skip_many<T>(many_parser: fn() -> Parser<T>) -> Parser<()> {
     let parser_fn =
@@ -122,9 +128,11 @@ pub fn skip_many<T>(many_parser: fn() -> Parser<T>) -> Parser<()> {
 /// 
 /// ```
 /// # use rusty_parsec::*;
+/// #
 /// # fn p_hello() -> Parser<String> {
 /// #     p_string(String::from("hello"))
 /// # }
+/// #
 /// let expected = Err(ParserFailure::new_err(
 ///     String::from("hello"), 
 ///     Some(String::from("goodb")),
@@ -134,7 +142,7 @@ pub fn skip_many<T>(many_parser: fn() -> Parser<T>) -> Parser<()> {
 /// let actual = skip_many_1(p_hello)
 ///     .run(String::from("goodbye"));
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn skip_many_1<T>(many_parser: fn() -> Parser<T>) -> Parser<()> {
     let parser_fn =

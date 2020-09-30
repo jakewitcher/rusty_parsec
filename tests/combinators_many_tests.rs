@@ -14,7 +14,7 @@ fn many_run_simple_parsers_succeeds_with_three_values() {
     let actual = many(p_hello)
         .run(String::from("hellohellohello"));
 
-    assert_eq!(expected, actual);
+    assert_eq!(actual, expected);
 }
 
 #[test]
@@ -27,7 +27,7 @@ fn many_run_simple_parsers_succeeds_when_no_values_returned_by_parser() {
     let actual = many(p_hello)
         .run(String::from("worldworldworld"));
 
-    assert_eq!(expected, actual);
+    assert_eq!(actual, expected);
 }
 
 #[test]
@@ -42,7 +42,7 @@ fn many_run_complex_parsers_succeeds_with_three_values() {
     let actual = many(p_abc_123)
         .run(String::from("abc123abc456abc789"));
 
-    assert_eq!(expected, actual);
+    assert_eq!(actual, expected);
 }
 
 #[test]
@@ -56,7 +56,7 @@ fn many_run_complex_parsers_fails_with_fatal_error() {
     let actual = many(p_abc_123)
         .run(String::from("abc123abc456abcdef"));
 
-    assert_eq!(expected, actual);
+    assert_eq!(actual, expected);
 }
 
 #[test]
@@ -71,7 +71,7 @@ fn many_1_run_simple_parsers_succeeds_with_three_values() {
     let actual = many_1(p_hello)
         .run(String::from("hellohellohello"));
 
-    assert_eq!(expected, actual);
+    assert_eq!(actual, expected);
 }
 
 #[test]
@@ -85,7 +85,7 @@ fn many_1_run_simple_parsers_fails_with_error_when_no_values_returned_by_parser(
     let actual = many_1(p_hello)
         .run(String::from("worldworldworld"));
 
-    assert_eq!(expected, actual);
+    assert_eq!(actual, expected);
 }
 
 #[test]
@@ -98,7 +98,7 @@ fn skip_many_run_simple_parsers_succeeds() {
     let actual = skip_many(p_hello)
         .run(String::from("hellohellohello"));
 
-    assert_eq!(expected, actual);
+    assert_eq!(actual, expected);
 }
 
 #[test]
@@ -112,7 +112,7 @@ fn skip_many_run_complex_parsers_fails_with_fatal_error() {
     let actual = skip_many(p_abc_123)
         .run(String::from("abc123abc456abcdef"));
 
-    assert_eq!(expected, actual);
+    assert_eq!(actual, expected);
 }
 
 #[test]
@@ -125,7 +125,7 @@ fn skip_many_1_run_simple_parsers_succeeds() {
     let actual = skip_many_1(p_hello)
         .run(String::from("hellohellohello"));
 
-    assert_eq!(expected, actual);
+    assert_eq!(actual, expected);
 }
 
 #[test]
@@ -139,5 +139,5 @@ fn skip_many_1_run_simple_parsers_fails_with_error_when_no_values_returned_by_pa
     let actual = skip_many_1(p_hello)
         .run(String::from("abc"));
 
-    assert_eq!(expected, actual);
+    assert_eq!(actual, expected);
 }
