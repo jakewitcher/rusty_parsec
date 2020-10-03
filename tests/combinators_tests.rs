@@ -50,7 +50,7 @@ fn choice_run_complex_parsers_fails_with_fatal_error() {
 }
 
 #[test]
-fn attempt_run_simple_parsers_succeeds() {
+fn attempt_run_complex_parsers_succeeds() {
     let expected = Ok(ParserSuccess::new(
         (123, String::from("abc")), 
         Position::new(1, 7, 6)
@@ -66,7 +66,7 @@ fn attempt_run_simple_parsers_succeeds() {
 }
 
 #[test]
-fn attempt_run_simple_parsers_fails_with_error() {
+fn attempt_run_complex_parsers_fails_with_error() {
     let expected = Err(ParserFailure::new_err(
         String::from("abc"), 
         Some(String::from("def")),
