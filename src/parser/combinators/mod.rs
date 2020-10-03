@@ -5,47 +5,59 @@ pub mod pipe;
 
 use super::{ParserState, ParserSuccess, ParserFailure, ParserResult, Parser};
 
-/// ```choice``` takes a Vector of parsers and applies them one at a time until one of the parsers succeeds. If none of the parsers succeed, ```choice``` returns an error. If any of the parsers fail with a fatal error, ```choice``` returns a fatal error.
+/// `choice` takes a Vector of parsers and applies each one in sequence until one of the parsers returns a `ParserSuccess`. Each parser in the 
+/// Vector must return a `ParserSuccess` with the same value type.
+/// 
+/// # Errors
+/// `choice` will return a `ParserFailure` with the `Error` severity if all parsers in the Vector fail, and will return a `FatalError` if any of the 
+/// parsers fail after changing the parser state.
 /// 
 /// # Examples
 /// 
 /// ```
-/// use rusty_parsec::*;
+/// # use rusty_parsec::*;
+/// #
+/// let expected = Ok(ParserSuccess::new(
+///     String::from("nerds"), 
+///     Position::new(1, 6, 5)
+/// ));
 /// 
-/// let expected = Ok(ParserSuccess::new("nerds".to_string(), Position::new(1, 6, 5)));
+/// let actual = choice(vec![
+///     p_string(String::from("hello")),
+///     p_string(String::from("goodbye")),
+///     p_string(String::from("nerds"))
+/// ]).run(String::from("nerds"));
 /// 
-/// let actual =
-///     choice(vec![
-///         p_string("hello".to_string()),
-///         p_string("goodbye".to_string()),
-///         p_string("nerds".to_string())
-///     ]).run("nerds".to_string());
-/// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn choice<T>(parsers: Vec<Parser<T>>) -> Parser<T> {
     choice_l(parsers, "value satisfying choice".to_string())
 }
 
-/// ```choice_l``` provides the same functionality as ```choice``` however it allows for a custom error message, making it easier to determine where the parser failed.
+/// `choice_l` works exactly like `choice` with one difference, it allows for a custom error message to be attached to the parser. 
+/// This custom error message can make it easier to determine where the parser failed.
 /// 
 /// # Examples
 /// 
 /// ```
-/// use rusty_parsec::*;
+/// # use rusty_parsec::*;
+/// #
+/// let expected = Err(ParserFailure::new_err(
+///     String::from("custom error message"), 
+///     None, 
+///     Position::new(1, 1, 0)
+/// ));
 /// 
-/// let expected = Err(ParserFailure::new_err("custom error msg".to_string(), None, Position::new(1, 1, 0)));
+/// let actual = choice_l(
+///     vec![
+///         p_string(String::from("hello")),
+///         p_string(String::from("goodbye")),
+///         p_string(String::from("nerds"))
+///     ],
+///     String::from("custom error message")
+/// ).run(String::from("world"));
 /// 
-/// let actual =
-///     choice_l(
-///         vec![
-///             p_string("hello".to_string()),
-///             p_string("goodbye".to_string()),
-///             p_string("nerds".to_string())
-///         ],
-///         "custom error msg".to_string()).run("world".to_string());
-/// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn choice_l<T>(parsers: Vec<Parser<T>>, label: String) -> Parser<T> {
     let parser_fn =
@@ -77,20 +89,32 @@ pub fn choice_l<T>(parsers: Vec<Parser<T>>, label: String) -> Parser<T> {
     Parser::new(parser_fn)
 }
 
-/// ```attempt``` applies the parser provided as an argument and if the parser fails with a fatal error after changing the parser state, ```attempt``` reverts the state back to before the parser was applied and returns an error instead of a fatal error. The position property of the ParserFailure struct is indicative of where the parser failed, not of the current position of the ParserState struct.
+/// `attempt` applies the the `parser` argument and if fails having changed the parser state, `attempt` reverts the state to point before the `parser`
+/// was applied, returning a `ParserFailure` with an `Error` severity instead of a `FatalError`.
+/// 
+/// # Errors
+/// `attempt` will only every return a `ParserFailure` with an `Error` severity. If the `parser` fails having changed the parser state, because it is
+/// able to revert the current `Position` as well as the history of the `ParserState` exactly as it was before the `parser` was applied, the parser state
+/// is no longer considered changed and therefore `attempt` can safely return an `Error` severity.
 /// 
 /// # Examples
 /// 
 /// ```
-/// use rusty_parsec::*;
+/// # use rusty_parsec::*;
+/// #
+/// # let p_u32_and_abc = p_u32()
+/// #     .and(p_string(String::from("abc")));
+/// #
+/// let expected = Err(ParserFailure::new_err(
+///     String::from("abc"),
+///     Some(String::from("def")),
+///     Position::new(1, 4, 3)
+/// ));
 /// 
-/// let parser = p_u32().and(p_string("abc".to_string()));
+/// let actual = attempt(p_u32_and_abc)
+///     .run(String::from("123def"));
 /// 
-/// let expected = Err(ParserFailure::new_err("abc".to_string(), Some("def".to_string()), Position::new(1, 4, 3)));
-/// 
-/// let actual = attempt(parser).run("123def".to_string());
-/// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn attempt<T>(parser: Parser<T>) -> Parser<T>
 where T: 'static
