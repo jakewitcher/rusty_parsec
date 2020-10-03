@@ -1,64 +1,83 @@
 use rusty_parsec::*;
 
 #[test]
-fn succeeds_parsing_with_choice() {
-    let expected = Ok(ParserSuccess::new("nerds".to_string(), Position::new(1, 6, 5)));
+fn choice_run_simple_parsers_succeeds() {
+    let expected = Ok(ParserSuccess::new(
+        String::from("nerds"), 
+        Position::new(1, 6, 5)
+    ));
 
-    let actual = 
-        choice(vec![
-            p_string("hello".to_string()), 
-            p_string("goodbye".to_string()),
-            p_string("nerds".to_string())
-        ]).run("nerds".to_string());
+    let actual = choice(vec![
+        p_string(String::from("hello")), 
+        p_string(String::from("goodbye")),
+        p_string(String::from("nerds"))
+    ]).run(String::from("nerds"));
 
-    assert_eq!(expected, actual);
+    assert_eq!(actual, expected);
 }
 
 #[test]
-fn fails_parsing_with_choice() {
-    let expected = Err(ParserFailure::new_err("value satisfying choice".to_string(), None, Position::new(1, 1, 0)));
+fn choice_run_simple_parsers_fails_with_error() {
+    let expected = Err(ParserFailure::new_err(
+        String::from("value satisfying choice"), 
+        None, 
+        Position::new(1, 1, 0)
+    ));
 
-    let actual = 
-        choice(vec![
-            p_string("hello".to_string()), 
-            p_string("goodbye".to_string()),
-            p_string("nerds".to_string())
-        ]).run("world".to_string());
+    let actual = choice(vec![
+        p_string(String::from("hello")), 
+        p_string(String::from("goodbye")),
+        p_string(String::from("nerds"))
+    ]).run(String::from("world"));
 
-    assert_eq!(expected, actual);
+    assert_eq!(actual, expected);
 }
 
 #[test]
-fn fails_parsing_with_choice_fatal_err() {
-    let expected = Err(ParserFailure::new_fatal_err("e".to_string(), Some("f".to_string()), Position::new(1, 2, 1)));
+fn choice_run_complex_parsers_fails_with_fatal_error() {
+    let expected = Err(ParserFailure::new_fatal_err(
+        String::from("e"), 
+        Some(String::from("f")), 
+        Position::new(1, 2, 1)
+    ));
 
-    let actual =
-        choice(vec![
-            p_char('a').and(p_char('b')),
-            p_char('d').and(p_char('e'))
-        ]).run("df".to_string());
+    let actual = choice(vec![
+        p_char('a').and(p_char('b')),
+        p_char('d').and(p_char('e'))
+    ]).run(String::from("df"));
 
-    assert_eq!(expected, actual);
+    assert_eq!(actual, expected);
 }
 
 #[test]
-fn succeeds_parsing_with_attempt() {
-    let expected = Ok(ParserSuccess::new((123, "abc".to_string()), Position::new(1, 7, 6)));
+fn attempt_run_simple_parsers_succeeds() {
+    let expected = Ok(ParserSuccess::new(
+        (123, String::from("abc")), 
+        Position::new(1, 7, 6)
+    ));
 
-    let parser = p_u32().and(p_string("abc".to_string()));
+    let parser = p_u32()
+        .and(p_string(String::from("abc")));
 
-    let actual = attempt(parser).run("123abc".to_string());
+    let actual = attempt(parser)
+        .run(String::from("123abc"));
 
-    assert_eq!(expected, actual);
+    assert_eq!(actual, expected);
 }
 
 #[test]
-fn fails_parsing_with_attempt() {
-    let expected = Err(ParserFailure::new_err("abc".to_string(), Some("def".to_string()), Position::new(1, 4, 3)));
+fn attempt_run_simple_parsers_fails_with_error() {
+    let expected = Err(ParserFailure::new_err(
+        String::from("abc"), 
+        Some(String::from("def")),
+        Position::new(1, 4, 3)
+    ));
 
-    let parser = p_u32().and(p_string("abc".to_string()));
+    let parser = p_u32()
+        .and(p_string(String::from("abc")));
 
-    let actual = attempt(parser).run("123def".to_string());
+    let actual = attempt(parser)
+        .run(String::from("123def"));
 
-    assert_eq!(expected, actual);
+    assert_eq!(actual, expected);
 }
