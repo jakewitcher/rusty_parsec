@@ -2,59 +2,77 @@ use super::{ParserState, ParserSuccess, ParserFailure, Parser};
 
 use num_traits::{Float, PrimInt};
 
-/// ```p_char``` takes a character as an argument and returns a parser success with the expected char value if the next character in the input string is a match, otherwise it returns a parser failure.
+/// `p_char` takes a single character as the `target` and returns a parser. When the parser is applied to the input string, it will 
+/// return the character parsed as a `ParserSuccess` if the next character in the input string matches the `target`. 
+/// 
+/// # Errors
+/// `p_char` will return a `ParserFailure` with a severity of `Error` if the next character in the input string does not match the `target`.
 /// 
 /// # Examples
 /// 
 /// ```
-/// use rusty_parsec::*;
+/// # use rusty_parsec::*;
+/// #
+/// let expected = Ok(ParserSuccess::new(
+///     'a', 
+///     Position::new(1, 2, 1)
+/// ));
 /// 
-/// let expected = Ok(ParserSuccess::new('a', Position::new(1, 2, 1)));
+/// let actual = p_char('a')
+///     .run(String::from("abc"));
 /// 
-/// let actual = 
-///     p_char('a')
-///         .run("abc".to_string());
-/// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn p_char(target: char) -> Parser<char> {
     char_return(target, target)
 }
 
-/// ```skip_char``` takes a character as an argument and returns a parser success of ```()``` if the next character in the input string is a match, otherwise it returns a parser failure.
+/// `skip_char` takes a single character as the `target` and returns a parser. When the parser is applied to the input string, it will 
+/// return a `()` as a `ParserSuccess` if the next character in the input string matches the `target`. 
+/// 
+/// # Errors
+/// `skip_char` will return a `ParserFailure` with a severity of `Error` if the next character in the input string does not match the `target`.
 /// 
 /// # Examples
 /// 
 /// ```
-/// use rusty_parsec::*;
+/// # use rusty_parsec::*;
+/// #
+/// let expected = Ok(ParserSuccess::new(
+///     (), 
+///     Position::new(1, 2, 1)
+/// ));
 /// 
-/// let expected = Ok(ParserSuccess::new((), Position::new(1, 2, 1)));
+/// let actual = skip_char('a')
+///     .run(String::from("abc"));
 /// 
-/// let actual = 
-///     skip_char('a')
-///         .run("abc".to_string());
-/// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn skip_char(target: char) -> Parser<()> {
     char_return(target, ())
 }
 
 
-/// ```char_return``` takes a character as an argument and returns a parser success of the value supplied as the second argument of the function if the next character in the input string is a match, otherwise it returns a parser failure.
+/// `char_return` takes a single character as the `target` and returns a parser. When the parser is applied to the input string, it will 
+/// return the provided `return_value` as a `ParserSuccess` if the next character in the input string matches the `target`. 
+/// 
+/// # Errors
+/// `char_return` will return a `ParserFailure` with a severity of `Error` if the next character in the input string does not match the `target`.
 /// 
 /// # Examples
 /// 
 /// ```
-/// use rusty_parsec::*;
+/// # use rusty_parsec::*;
+/// #
+/// let expected = Ok(ParserSuccess::new(
+///     true, 
+///     Position::new(1, 2, 1)
+/// ));
 /// 
-/// let expected = Ok(ParserSuccess::new(true, Position::new(1, 2, 1)));
+/// let actual = char_return('a', true)
+///     .run(String::from("abc"));
 /// 
-/// let actual = 
-///     char_return('a', true)
-///         .run("abc".to_string());
-/// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn char_return<T>(target: char, return_value: T) -> Parser<T> 
 where T: 'static
@@ -88,20 +106,27 @@ where T: 'static
     Parser::new(parser_fn)
 }
 
-/// ```satisfy``` takes a function of type ```(char) -> bool``` and returns a parser success if the next character in the input string returns true when the function is applied. Otherwise ```satisfy``` returns a parser failure.
+/// `satisfy` takes a function (`f`) of type `(char) -> bool` and returns a parser. When the parser is applied to the input string, it will 
+/// return the character parsed as a `ParserSuccess` if the next character in the input string returns true when applied to the function `f`.
+/// 
+/// # Errors
+/// `satisfy` will return a `ParserFailure` with a severity of `Error` if the next character in the input string returns false when applied
+/// to the function `f`.
 /// 
 /// # Examples
 /// 
 /// ```
-/// use rusty_parsec::*;
+/// # use rusty_parsec::*;
+/// #
+/// let expected = Ok(ParserSuccess::new(
+///     'c', 
+///     Position::new(1, 2, 1)
+/// ));
 /// 
-/// let expected = Ok(ParserSuccess::new('c', Position::new(1, 2, 1)));
+/// let actual = satisfy(Box::new(|c:char|c.is_ascii_lowercase()))
+///     .run("cat".to_string());
 /// 
-/// let actual = 
-///     satisfy(Box::new(|c:char|c.is_ascii_lowercase()))
-///         .run("cat".to_string());
-/// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<char> {
     let parser_fn =
@@ -126,20 +151,29 @@ pub fn satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<char> {
     Parser::new(parser_fn)
 }
 
-/// ```many_satisfy``` takes a function of type ```(char) -> bool``` and repeatedly applies the parser to every successive character in the input string until the function returns false. ```many_satisfy``` then returns all characters successfully parsed as a String. If no characters return true, ```many_satisfy``` returns an empty string.
+/// `many_satisfy` takes a function (`f`) of type `(char) -> bool` and returns a parser. When the parser is applied to the input string, it will 
+/// return the character parsed as a `ParserSuccess` if the next character in the input string returns true when applied to the function `f`. Unlike
+/// `satsify`, the parser will continue to apply the function `f` on each subsequent character in sequence until the function `f` returns false.
+/// All successfully parsed characters are collected into a single string and returned as the value of a `ParserSuccess`.
+/// 
+/// # Errors
+/// `many_satisfy` will never return an error. If the first character consumed returns false when applied to the function `f`, `many_satisfy` will
+/// return a `ParserSuccess` with an empty string as the value and the parser state unchanged.
 /// 
 /// # Examples
 /// 
 /// ```
-/// use rusty_parsec::*;
+/// # use rusty_parsec::*;
+/// #
+/// let expected = Ok(ParserSuccess::new(
+///     String::from("aaa"), 
+///     Position::new(1, 4, 3)
+/// ));
 /// 
-/// let expected = Ok(ParserSuccess::new("aaa".to_string(), Position::new(1, 4, 3)));
+/// let actual = many_satisfy(Box::new(|c:char|c == 'a'))
+///     .run(String::from("aaabbb"));
 /// 
-/// let actual = 
-///     many_satisfy(Box::new(|c:char|c == 'a'))
-///         .run("aaabbb".to_string());
-/// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn many_satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<String> {
     let parser_fn =
@@ -162,7 +196,7 @@ pub fn many_satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<String> {
     Parser::new(parser_fn)
 }
 
-/// ```p_string``` takes a String as an argument and returns a parser success with the expected String value if the next string slice of the input string is a match, otherwise it returns a parser failure.
+/// `p_string` takes a String as an argument and returns a parser success with the expected String value if the next string slice of the input string is a match, otherwise it returns a parser failure.
 /// 
 /// # Examples
 /// 
@@ -175,13 +209,13 @@ pub fn many_satisfy(f: Box<dyn Fn (char) -> bool>) -> Parser<String> {
 ///     p_string("hello".to_string())
 ///         .run("hello, world".to_string());
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn p_string(target: String) -> Parser<String> {
     string_return(target.clone(), target)
 }
 
-/// ```skip_string``` takes a String as an argument and returns a parser success of ```()``` if the next string slice of the input string is a match, otherwise it returns a parser failure.
+/// `skip_string` takes a String as an argument and returns a parser success of `()` if the next string slice of the input string is a match, otherwise it returns a parser failure.
 /// 
 /// # Examples
 /// 
@@ -194,13 +228,13 @@ pub fn p_string(target: String) -> Parser<String> {
 ///     skip_string("hello".to_string())
 ///         .run("hello, world".to_string());
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn skip_string(target: String) -> Parser<()> {
     string_return(target, ())
 }
 
-/// ```string_return``` takes a String as an argument and returns a parser success of the value supplied as the second argument of the function if the next string slice of the input string is a match, otherwise it returns a parser failure.
+/// `string_return` takes a String as an argument and returns a parser success of the value supplied as the second argument of the function if the next string slice of the input string is a match, otherwise it returns a parser failure.
 /// 
 /// # Examples
 /// 
@@ -213,7 +247,7 @@ pub fn skip_string(target: String) -> Parser<()> {
 ///     string_return("hello".to_string(), true)
 ///         .run("hello, world".to_string());
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn string_return<T>(target: String, return_value: T) -> Parser<T> 
 where T: 'static
@@ -247,7 +281,7 @@ where T: 'static
     Parser::new(parser_fn)
 }
 
-/// ```p_i32``` tries to parse the input string as an integer and if it succeeds, returns the result as an i32 integer.
+/// `p_i32` tries to parse the input string as an integer and if it succeeds, returns the result as an i32 integer.
 /// 
 /// # Examples
 /// 
@@ -259,13 +293,13 @@ where T: 'static
 /// let actual = 
 ///     p_u32().run("123abc".to_string());
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn p_i32() -> Parser<i32> {
     p_int(Box::new(|maybe_int: String| maybe_int.parse::<i32>()))
 }
 
-/// ```p_i64``` tries to parse the input string as an integer and if it succeeds, returns the result as an i64 integer.
+/// `p_i64` tries to parse the input string as an integer and if it succeeds, returns the result as an i64 integer.
 /// 
 /// # Examples
 /// 
@@ -277,13 +311,13 @@ pub fn p_i32() -> Parser<i32> {
 /// let actual = 
 ///     p_i64().run("123abc".to_string());
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn p_i64() -> Parser<i64> {
     p_int(Box::new(|maybe_int: String| maybe_int.parse::<i64>()))
 }
 
-/// ```p_u32``` tries to parse the input string as an integer and if it succeeds, returns the result as an u32 integer.
+/// `p_u32` tries to parse the input string as an integer and if it succeeds, returns the result as an u32 integer.
 /// 
 /// # Examples
 /// 
@@ -295,13 +329,13 @@ pub fn p_i64() -> Parser<i64> {
 /// let actual = 
 ///     p_u32().run("123abc".to_string());
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn p_u32() -> Parser<u32> {
     p_int(Box::new(|maybe_int: String| maybe_int.parse::<u32>()))
 }
 
-/// ```p_u64``` tries to parse the input string as an integer and if it succeeds, returns the result as an u64 integer.
+/// `p_u64` tries to parse the input string as an integer and if it succeeds, returns the result as an u64 integer.
 /// 
 /// # Examples
 /// 
@@ -313,13 +347,13 @@ pub fn p_u32() -> Parser<u32> {
 /// let actual = 
 ///     p_u64().run("123abc".to_string());
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn p_u64() -> Parser<u64> {
     p_int(Box::new(|maybe_int: String| maybe_int.parse::<u64>()))
 }
 
-/// ```p_isize``` tries to parse the input string as an integer and if it succeeds, returns the result as an isize integer.
+/// `p_isize` tries to parse the input string as an integer and if it succeeds, returns the result as an isize integer.
 /// 
 /// # Examples
 /// 
@@ -331,13 +365,13 @@ pub fn p_u64() -> Parser<u64> {
 /// let actual = 
 ///     p_isize().run("123abc".to_string());
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn p_isize() -> Parser<isize> {
     p_int(Box::new(|maybe_int: String| maybe_int.parse::<isize>()))
 }
 
-/// ```p_usize``` tries to parse the input string as an integer and if it succeeds, returns the result as an usize integer.
+/// `p_usize` tries to parse the input string as an integer and if it succeeds, returns the result as an usize integer.
 /// 
 /// # Examples
 /// 
@@ -349,7 +383,7 @@ pub fn p_isize() -> Parser<isize> {
 /// let actual = 
 ///     p_usize().run("123abc".to_string());
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn p_usize() -> Parser<usize> {
     p_int(Box::new(|maybe_int: String| maybe_int.parse::<usize>()))
@@ -389,7 +423,7 @@ where T: PrimInt + 'static
     Parser::new(parser_fn)
 }
 
-/// ```p_f32``` tries to parse the input string as a floating point number and if it succeeds, returns the result as an f32 floating point.
+/// `p_f32` tries to parse the input string as a floating point number and if it succeeds, returns the result as an f32 floating point.
 /// 
 /// # Examples
 /// 
@@ -401,13 +435,13 @@ where T: PrimInt + 'static
 /// let actual = 
 ///     p_f32().run("123.35abc".to_string());
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn p_f32() -> Parser<f32> {
     p_float(Box::new(|maybe_float: String| maybe_float.parse::<f32>()))
 }
 
-/// ```p_f64``` tries to parse the input string as a floating point number and if it succeeds, returns the result as an f64 floating point.
+/// `p_f64` tries to parse the input string as a floating point number and if it succeeds, returns the result as an f64 floating point.
 /// 
 /// # Examples
 /// 
@@ -419,7 +453,7 @@ pub fn p_f32() -> Parser<f32> {
 /// let actual = 
 ///     p_f64().run("123.35abc".to_string());
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn p_f64() -> Parser<f64> {
     p_float(Box::new(|maybe_float: String| maybe_float.parse::<f64>()))
@@ -463,7 +497,7 @@ where T: Float + 'static
     Parser::new(parser_fn)
 }
 
-/// ```ws``` parses zero or more successive whitespace characters, returning ```()``` as the parser result.
+/// `ws` parses zero or more successive whitespace characters, returning `()` as the parser result.
 /// 
 /// # Examples
 /// 
@@ -478,7 +512,7 @@ where T: Float + 'static
 ///         .and(p_char('b'))
 ///         .run("  \na\t  \r\nb".to_string());
 /// 
-/// assert_eq!(expected, actual);
+/// assert_eq!(actual, expected);
 /// ```
 pub fn ws() -> Parser<()> {
     let parser_fn =
